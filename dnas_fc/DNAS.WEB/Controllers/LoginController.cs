@@ -593,5 +593,25 @@ namespace DNAS.WEB.Controllers
             //return Json(new { response = appConfig.Value?.AllowedCharacterForJs });
             return Json(appConfig.Value?.AllowedCharacterForJs);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> TestDatabaseConnection()
+        {
+            try
+            {
+                _logger.LogwriteInfo("[TEST] Testing database connection...", _logfilename);
+                
+                // This will trigger a database connection through Entity Framework
+                var userCount = await _iSender.Send(new CheckLoginQueryCommand(new UserMasterModel { UserName = "test" }));
+                
+                _logger.LogwriteInfo("[TEST] Database connection test completed successfully", _logfilename);
+                return Json(new { success = true, message = "Database connection successful", timestamp = DateTime.Now });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogwriteInfo($"[TEST] Database connection test failed: {ex.Message}", _logfilename);
+                return Json(new { success = false, message = ex.Message, timestamp = DateTime.Now });
+            }
+        }
     }
 }
