@@ -1,0 +1,227 @@
+﻿@using System.Security.Claims
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bandhan Bank</title>
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
+    <!-- CSS  -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/vendor/ti-icons/css/themify-icons.css" />
+    <link rel="stylesheet" href="/assets/vendor/mdi/css/materialdesignicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+
+    <style>
+        .captcha-container {
+            display: flex;
+            align-items: center;
+        }
+
+        #load {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            background: url("/assets/images/loader.png") no-repeat center center rgba(0,0,0,0.25)
+        }
+
+        .refresh-icon {
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #007bff;
+        }
+
+            .refresh-icon:hover {
+                color: #0056b3;
+            }
+
+        .otp-input {
+            width: 46px;
+            height: 46px;
+            text-align: center;
+            font-size: 18px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .otp-container {
+            margin-top: 20%;
+        }
+
+        .timer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+            background-color: #fff;
+            border: 1px solid crimson;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            background-color: white;
+            border: 2px solid crimson;
+            border-radius: 5px;
+            color: crimson;
+            font-size: 16px;
+            display: none; /* Initially hidden */
+            z-index: 1000; /* Ensure it's on top */
+        }
+
+        .resend-container {
+            margin-top: 20px;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="load"></div>
+    <div id="timer" class="timer"></div>
+    <div class="bg-gray-200 full-page-wrapper">
+        <div class="content-wrapper">
+            <div class="row w-100 mx-0">
+                <div class="col-lg-9 mx-auto">
+                    <div class="bg-white  rounded shadow auth otp-box">
+                        <div class="row">
+                            <div class="col-lg-6 auth d-flex flex-column ">
+                                <div class="brand-logo">
+                                    <img src="/assets/images/logo.png" alt="Bandhan Bank" />
+                                </div>
+                                <div class="d-none d-lg-block">
+                                    <img src="/assets/images/login.svg" alt="" class="img-fluid" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <form>
+                                    <div class="bg-white text-left py-5 px-4 px-sm-5 ">
+                                        <h4 class="f-s-26 f-w-700 text-black  ">
+                                            Enter Your OTP To Verify
+                                        </h4>
+                                        @if (TempData["MaskEmail"] != null)
+                                        {
+                                            <ul class="navbar-nav">
+                                                <li class="nav-item d-none d-lg-block f-w-500 ms-0">
+                                                    @* <span class="text-black f-w-600">@User.FindFirstValue("Email")</span> *@
+                                                    <span class="text-black f-w-600">@TempData["MaskEmail"]</span>
+                                                </li>
+                                            </ul>
+                                        }
+                                        <div class="wrapper">
+                                            <div class="otp-container">
+                                                <input type="password" maxlength="1" class="otp-input mx-1" oninput="moveToNext(this, 'otp2')" id="otp1" onkeydown="handleBackspace(event, 'otp1', 'otp2')" />
+                                                <input type="password" maxlength="1" class="otp-input mx-1" oninput="moveToNext(this, 'otp3')" id="otp2" onkeydown="handleBackspace(event, 'otp2', 'otp1')" />
+                                                <input type="password" maxlength="1" class="otp-input mx-1" oninput="moveToNext(this, 'otp4')" id="otp3" onkeydown="handleBackspace(event, 'otp3', 'otp2')" />
+                                                <input type="password" maxlength="1" class="otp-input mx-1" oninput="moveToNext(this, 'otp5')" id="otp4" onkeydown="handleBackspace(event, 'otp4', 'otp3')" />
+                                                <input type="password" maxlength="1" class="otp-input mx-1" oninput="moveToNext(this, 'otp6')" id="otp5" onkeydown="handleBackspace(event, 'otp5', 'otp4')" />
+                                                <input type="password" maxlength="1" class="otp-input mx-1" oninput="moveToNext(this)" id="otp6" onkeydown="handleBackspace(event, 'otp6', 'otp5')" />
+                                            </div>
+                                        </div>
+
+                                        <div id="messageContainer" style="display: none; font-weight: bold;margin-top:10px;"></div><br />
+
+
+                                        <div class="resend-container">
+                                            <a id="resendLink" href="javascript:void(0);" onclick="resendOtp()" style="pointer-events: none; color: gray;">Resend OTP</a>
+                                        </div>
+
+                                        <!-- Error Message -->
+                                        <div id="errorMessage" class="error-message" style="display: none;">
+                                            <p>Please enter the correct OTP.</p>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <button type="submit" class="btn btn-primary btn-lg  f-s-16 " id="verifyBtn" onclick="verifyOtp()">SUBMIT</button>
+                                        </div>
+                                        <div class="pt-3 my-2 d-md-flex justify-content-between align-items-center">
+                                            <a href="/Login" class="auth-link text-black f-w-400">Back To Login</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/assets/js/jquery.js"></script>
+    <script src="~/js/otp.js"></script>
+    <script>
+        document.onreadystatechange = function () {
+            var state = document.readyState
+            if (state == 'complete') {
+                setTimeout(function () {
+                    document.getElementById('load').style.visibility = "hidden";
+                }, 1000);
+            }
+        }
+
+         $(document).ajaxStart(function () {
+            document.getElementById('load').style.visibility = "visible";
+        });
+
+        $(document).ajaxStop(function () {
+            document.getElementById('load').style.visibility = "hidden";
+        });
+
+    </script>
+    <script>
+        const mailOtpValidateTime = @ViewData["MailOtpValidateTime"];
+        const totalTime = parseInt(mailOtpValidateTime);
+        // Retrieve the last timer state from localStorage or start from totalTime
+        let savedTime = localStorage.getItem('remainingTime');
+        let timeLeft = savedTime ? parseInt(savedTime) : totalTime;
+        startTimer(timeLeft);
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

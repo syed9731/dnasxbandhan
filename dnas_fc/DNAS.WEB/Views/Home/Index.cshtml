@@ -1,0 +1,14 @@
+﻿@model DNAS.Domian.DTO.FYI.FyiModel
+@{
+    ViewData["Title"] = "Home Page";
+    Layout = null;
+}
+
+<div class="text-center">
+    <form action="/Home/save" method="post">
+        @Html.TextBoxFor(m => m.WhoTagged, new { @class = "form-control" })
+        @Html.TextBoxFor(m => m.ToWhome, new { @class = "form-control" })
+        @Html.TextBoxFor(m => m.NoteId, new { @class = "form-control" })
+        <button type="submit">Save</button>
+    </form>
+</div>

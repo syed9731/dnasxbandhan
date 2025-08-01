@@ -1,0 +1,344 @@
+﻿@model DNAS.Domain.DTO.Note.ApproverHistoryNotes
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.ApproverDashboard = "active";
+    int listDataCount = Model.ApproverHistoryData.Count();
+}
+
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center icon-holder mb-3">
+        <h1 class="f-w-700 f-s-32">Approver Dashboard</h1>
+    </div>
+
+    <div class="col-lg-12">
+        <div class="row">
+
+            <form id="searchForm" method="get" action="/Note/ApproverDashboard">
+                <div class="gap-3 dashboard-searchform">
+
+                    @Html.HiddenFor(model => model.FilterApproverHistory.UserId)
+
+                    <div class="search-section">
+                        @Html.DropDownListFor(model => model.FilterApproverHistory.DateRange, new SelectList(new[]
+                                 {
+                        new SelectListItem{Value="",Text="Select Date"},
+                        new SelectListItem{Value="last-30-days",Text="Last 30 Days"},
+                        new SelectListItem{Value="last-7-days",Text="Last 7 Days"},
+                        new SelectListItem{Value="custom",Text="Custom"}
+                        }, "Value", "Text"), new { @class = "form-control search-field", id = "dateRange", name = "Date" })
+                    </div>
+                    <div class="dateShowHide">
+                        <div class=" search-section">
+                            @Html.TextBoxFor(model => model.FilterApproverHistory.StartDate, new { @class = "form-control search-field dateShowHide", @name = "StartDate", id = "datePickerStartDate", placeholder = "Start Date", autocomplete = "off" })<br />
+                        </div>
+                    </div>
+                    <div class="dateShowHide">
+                        <div class="search-section">
+                            @Html.TextBoxFor(model => model.FilterApproverHistory.EndDate, new { @class = "form-control search-field dateShowHide", @name = "EndDate", id = "datePickerEndDate", placeholder = "End Date", autocomplete = "off" })
+                        </div>
+                    </div>
+                    <div class="search-section">
+                        @Html.DropDownListFor(model => model.FilterApproverHistory.Category, new SelectList(new[]
+                                 {
+                        new SelectListItem { Value = "", Text = "Select Category" },
+                        new SelectListItem { Value = "Financial", Text = "Financial" },
+                        new SelectListItem { Value = "Non Financial", Text = "Non Financial" }
+                        }, "Value", "Text"), new { @class = "form-control search-field", id = "categoryField", name = "category" })
+                    </div>
+
+                    <div class=" search-section">
+                        @Html.DropDownListFor(model => model.FilterApproverHistory.Status, new SelectList(new[]
+                                 {
+                        new SelectListItem{Value="",Text="Select Status"},
+                        new SelectListItem{Value="Pending",Text="Pending"},
+                        new SelectListItem{Value="Approved",Text="Approved"},
+                        new SelectListItem{Value="Delegated",Text="Delegated"},
+                        new SelectListItem{Value="Send Back",Text="Sent Back"},
+                        new SelectListItem{Value="Skipped",Text="Skipped"}
+                        }, "Value", "Text"), new { @class = "form-control search-field", id = "statusField", name = "status" })
+                    </div>
+
+                    <div class=" search-section drpdown-box-wrap">
+
+                        <div class=" drpdown-box">
+                            <div class=" search-section-box ">
+                                @Html.TextBoxFor(model => model.FilterApproverHistory.Title, new { @class = "form-control search-field", autocomplete = "off", placeholder = "Title" })
+                            </div>
+                            <ul style="list-style: none; border: 1px solid #d9d9d9; display:none;" id="titlelist">
+                            </ul>
+                        </div>
+                    </div>
+
+
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="Search" style="padding: .45rem .75rem;" id="btnSearch"><i class="ti-search"></i></button>
+
+                        <div class="search-section">
+                            <button type="button" id="DownloadApproverHistory" class="btn btn-primary search-btn" value="" data-toggle="tooltip" data-placement="bottom" title="Download Excel"><i class="ti-download"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive md-height">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Note Number</th>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Create Date</th>
+                                    <th>Status</th>
+                                    <th>Total Aging</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ApproverHistoryData.Any())
+                                {
+                                    foreach (var item in Model.ApproverHistoryData)
+                                    {
+                                        <tr>
+                                            @Html.HiddenFor(m => item.NoteId)
+                                            @Html.HiddenFor(m => item.ApproverId)
+
+                                            <td>
+
+                                                @if (item.Status == "Delegated")
+                                                {
+                                                    <a style="text-decoration: none; color: var(--bs-table-striped-color);" href="/Note/DelegateNote?p=@item.NoteId">
+                                                        @item.NoteNumber
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a style="text-decoration: none; color: var(--bs-table-striped-color);" href="/Note/ApprovalRequest?p=@item.NoteId">
+                                                        @item.NoteNumber
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (item.Status == "Delegated")
+                                                {
+                                                    <a style="text-decoration: none; color: var(--bs-table-striped-color);" href="/Note/DelegateNote?p=@item.NoteId">
+                                                        @item.NoteTitle
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a style="text-decoration: none; color: var(--bs-table-striped-color);" href="/Note/ApprovalRequest?p=@item.NoteId">
+                                                        @item.NoteTitle
+                                                    </a>
+                                                }
+                                            </td>
+                                            <td>@item.CategoryName</td>
+                                            <td>@item.DateOfCreation</td>
+
+                                            <td>
+                                                @{
+                                                    if (string.IsNullOrWhiteSpace(item.addedby))
+                                                    {
+                                                        @item.Status
+                                                    }
+                                                    else
+                                                    {
+                                                        switch (item.Suffix_Prefix)
+                                                        {
+                                                            case "1":
+                                                                @:Reviewer @item.Status
+                                                                break;
+                                                            case "2":
+                                                                @:Approver @item.Status
+                                                                break;
+                                                        }
+                                                    }
+                                                }
+                                            </td>
+
+                                            <td>@item.Aging</td>
+                                            <td>
+
+                                                @if (item.Status == "Delegated")
+                                                {
+                                                    <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/DelegateNote?p=@item.NoteId">
+                                                        <i class="ti-eye"></i>
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    if (item.isVersion == "3")
+                                                    {
+                                                        <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/ApprovedNote?p=@item.NoteId">
+                                                            <i class="ti-eye"></i>
+                                                        </a>
+                                                    }                                                    
+                                                    else
+                                                    {
+                                                        <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/ApprovalRequest?p=@item.NoteId">
+                                                            <i class="ti-eye"></i>
+                                                        </a>
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center">No data found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section PostScripts {
+    <link href="~/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <script src="~/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+
+    <script>
+
+        if ($('#dateRange option:selected').val() == 'custom') {
+            $('.dateShowHide').css('display', 'block');
+            $('#FilterApproverHistory_Title').closest('.search-section').addClass('title-width');
+        }
+        else {
+            $('.dateShowHide').css('display', 'none');
+            $('#FilterApproverHistory_Title').closest('.search-section').removeClass('title-width');
+        }
+
+
+
+        $(function () {
+            $("#datePickerStartDate, #datePickerEndDate").datepicker({
+                autoclose: true,
+                format: "dd/mm/yyyy",
+                todayHighlight: true,
+            });
+
+            if ('@TempData["msg"]' != '') {
+                sucesstoast();
+                $('.sucessmsg').html('@TempData["msg"]');
+            }
+        });
+
+        $(document).on('change', '#dateRange', function (e) {
+            if ($(this).val() === "custom") {
+                $('.dateShowHide').css('display', 'block');
+                $('#FilterApproverHistory_Title').closest('.search-section').addClass('title-width');
+                $("#datePickerStartDate,#datePickerEndDate").val('');
+            }
+
+            else {
+                $('.dateShowHide').css('display', 'none');
+                $('#FilterApproverHistory_Title').closest('.search-section').removeClass('title-width');
+                $("#datePickerStartDate,#datePickerEndDate").val('');
+            }
+
+        });
+
+        $('#DownloadApproverHistory').click(function () {
+            if ('@listDataCount' == 0) {
+                $('.sucessmsg').html('No data found to download.');
+                sucesstoast();
+
+            }
+            else {
+                var jsonData = JSON.stringify(@Html.Raw(Json.Serialize(Model)));
+
+                $.ajax({
+                    url: '@Url.Action("DownloadApproverHistory", "Note")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: jsonData,
+                    xhrFields: {
+                        responseType: 'blob'
+                    },
+                    success: function (response) {
+                        var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var url = window.URL.createObjectURL(blob);
+
+                        var link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'ApproverHistoryNoteReport.xlsx';
+
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(error);
+                    }
+                });
+            }
+        });
+
+        $(document).on("keyup", "#FilterApproverHistory_Title", function () {
+            $("#load").hide();
+            $.ajax({
+                url: "/Note/FetchAutopopulateNoteTitleList",
+                method: "GET",
+                data: { query: $("#FilterApproverHistory_Title").val(), dashboardType: "approver" },
+                success: function (arr) {
+                    if (arr.length > 0) {
+                        let item = '';
+                        $.each(arr, function (i, j) {
+                            item += "<li style='cursor:pointer' class='createapprover' onclick='getNoteTitle(" + i + ")'><p class='underpara'><span id='approverlistid_" + i + "' class='underspan'>" + arr[i].noteTitle + "</span></p></li>";
+                        });
+                        $("#titlelist").html(item);
+                        $("#titlelist").css("display", "block");
+                    }
+                    else {
+                        $("#titlelist").html('');
+                        $("#titlelist").css("display", "none");
+                    }
+                }
+            });
+
+
+        });
+
+        $(document).on("click", "#btnSearch", function (e) {
+            if ($('#dateRange option:selected').val() == 'custom') {
+                if ($("#datePickerStartDate").val() == '' || $("#datePickerEndDate").val() == '') {
+
+                    $("#errormsg").text("Please enter start and end date first.");
+                    $("#error_popup").modal('show');
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else {
+                    $(form).submit();
+                }
+            }
+            else {
+                $(form).submit();
+            }
+        });
+
+        function getNoteTitle(id) {
+            let str = $("#approverlistid_" + id).text();
+            $("#FilterApproverHistory_Title").val(str);
+            $("#titlelist").css("display", "none");
+        }
+
+
+
+    </script>
+
+}

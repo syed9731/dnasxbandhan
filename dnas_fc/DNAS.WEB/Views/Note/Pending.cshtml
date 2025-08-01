@@ -1,0 +1,126 @@
+﻿@model DNAS.Domian.DTO.Note.PendingData
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.PendingApprovals = "active";
+}
+
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="f-w-700 f-s-32">Pending Approvals</h1>
+    </div>
+
+    <form id="searchForm" method="get" action="/Note/Pending">
+        <div class="d-flex flex-wrap gap-3">
+            <div class=" search-section">
+                @Html.TextBoxFor(model => model.FilterPendings.StartDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerStartDate" })
+            </div>
+            <div class="search-section">
+                @Html.TextBoxFor(model => model.FilterPendings.EndDate, new { @class = "form-control form-control-lg search-field", @name = "EndDate", id = "datePickerEndDate" })
+            </div>
+            <div class="search-section">
+                @Html.DropDownListFor(model => model.FilterPendings.Category, new SelectList(new[]
+                         {
+                new SelectListItem { Value = "", Text = "Select Category" },
+                new SelectListItem { Value = "Financial", Text = "Financial" },
+                new SelectListItem { Value = "Non Financial", Text = "Non Financial" }
+                }, "Value", "Text"), new { @class = "form-control form-control-lg search-field", id = "categoryField", name = "category" })
+            </div>
+
+            <div class="search-section">
+                <button type="submit" class="btn btn-primary search-btn">Search</button>
+            </div>
+            <div class="search-section">
+                <input type="button" id="DownloadPending" class="btn btn-primary search-btn" value="Download Excel" />
+            </div>
+        </div>
+    </form>
+
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Create Date</th>
+                                    <th>Aging</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Table)
+                                {
+                                    <tr>
+                                        <td>@item.NoteTitle</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@(Convert.ToDateTime(item.DateOfCreation).ToString("dd MMM yyyy"))</td>
+                                        <td>@item.Aging</td>
+                                        <td>
+                                            <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/note/Withdraw?p=@item.NoteId">
+                                                <i class="ti-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PostScripts {
+
+    <link href="~/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <script src="~/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        $(function () {
+            $("#datePickerStartDate, #datePickerEndDate").datepicker({
+                autoclose: true,
+                format: "dd/mm/yyyy",
+                todayHighlight: true,
+            });
+
+            if ('@TempData["msg"]' != '') {
+                sucesstoast();
+                $('.sucessmsg').html('@TempData["msg"]');
+            }
+
+        });
+
+        $('#DownloadPending').click(function () {
+            var jsonData = JSON.stringify(@Html.Raw(Json.Serialize(Model)));
+
+            $.ajax({
+                url: '@Url.Action("DownloadPending", "Note")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonData,
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (response) {
+                    var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var url = window.URL.createObjectURL(blob);
+
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'PendingNoteReport.xlsx';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+    </script>
+}

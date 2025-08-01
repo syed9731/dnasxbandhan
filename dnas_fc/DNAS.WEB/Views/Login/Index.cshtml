@@ -1,0 +1,239 @@
+﻿@using DNAS.Domian.Common
+@using DNAS.Domian.DTO.Login
+@using System.Configuration
+@using Microsoft.Extensions.Options
+@model UserMasterModel
+@inject IOptions<AppConfig> appConfig
+@{
+    ViewData["Title"] = "Index";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bandhan Bank</title>
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
+    <!-- CSS  -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/vendor/ti-icons/css/themify-icons.css" />
+    <link rel="stylesheet" href="/assets/vendor/mdi/css/materialdesignicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        #dntCaptchaRefreshButton {
+            font-size: 20px;
+        }
+
+        #load {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 9999;
+            background: url("/assets/images/loader.png") no-repeat center center rgba(0,0,0,0.25)
+        }
+
+        .captcha-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .refresh-icon {
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 24px;
+            color: #007bff;
+        }
+
+            .refresh-icon:hover {
+                color: #0056b3;
+            }
+
+        button {
+            border: none;
+            background: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="load"></div>
+
+    <div class="bg-gray-200 full-page-wrapper">
+        <div class="content-wrapper">
+            <div class="row w-100 mx-0">
+                <div class="col-lg-9 mx-auto">
+                    <div class="bg-white  rounded shadow auth">
+                        <div class="row">
+                            <div class="col-lg-6 auth d-flex flex-column ">
+                                <div class="brand-logo">
+                                    <img src="/assets/images/logo.png" alt="Bandhan Bank" />
+                                </div>
+                                <div class="d-none d-lg-block">
+                                    <img src="/assets/images/login.svg" alt="" class="img-fluid" />
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="bg-white text-left py-5 px-4 px-sm-5 ">
+                                    @if (!appConfig.Value.IsProduction)
+                                    {
+                                        <h5 class="f-s-26 f-w-700" style="color:darkred"><u>You are in UAT</u></h5>
+                                    }
+                                    <h4 class="f-s-26 f-w-700 text-black">
+                                        Login to Your Account
+                                    </h4>
+                                    <span style="font-weight:600;font-style: italic;font-size:14px;">*Use AD(domain) login password for Individual User</span><br />
+                                    <span style="font-weight:600;font-style: italic;font-size:14px;">*Also please clear cookies and cache of your browser before logging in for first time, for best experience</span>
+                                    <form class="pt-3" action="/login/Index" method="post" id="dnsform">
+                                        @Html.AntiForgeryToken()
+                                        <label for="user-id" class="form-label">User ID*</label>
+                                        <div class="mb-4">
+                                            @Html.TextBoxFor(m => m.UserName, new { @class = "form-control form-control-lg", @placeholder = "User Id", @autocomplete = "off" })
+                                            <span class="error">@Html.ValidationMessageFor(m => m.UserName)</span>
+                                        </div>
+                                        <label for="password" class="form-label">Password*</label>
+                                        <div class="mb-4">
+                                            @Html.TextBoxFor(m => m.Password, new { @class = "form-control form-control-lg", @type = "password", @placeholder = "Password", @autocomplete = "off" })
+                                            <span class="error">@Html.ValidationMessageFor(m => m.Password)</span>
+                                        </div>
+                                        <label for="Login-Type" class="form-label">Login Type*</label>
+                                        <div class="mb-4">
+                                            @* <input type="radio" name="LoginType" value="Single" checked /><label style="padding-left:5px;">Individual User</label>&nbsp;&nbsp;
+                                            <input type="radio" name="LoginType" value="Group" /><label style="padding-left:5px;">Branch/Generic ID User</label> *@
+                                            <div class="d-flex flex-wrap gap-3 pt-2">
+                                                <div>
+                                                    <input type="radio" name="LoginType" value="Single" checked /><label style="padding-left:5px;">Individual User</label>&nbsp;&nbsp;
+                                                </div>
+                                                <div>
+                                                    <input type="radio" name="LoginType" value="Group" /><label style="padding-left:5px;">Branch/Generic ID User</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-4 text-start">
+                                            <div style="padding-bottom:2px;">
+                                                <img id="captchaImage" src="@ViewData["CaptchaImage"]" alt="Captcha" style="cursor: pointer;" />
+                                                <button type="button" onclick="refreshImage()" title="Refresh CAPTCHA" aria-label="Refresh CAPTCHA">
+                                                    <img src="/assets/images/refresh.png" alt="Refresh CAPTCHA" />
+                                                </button>
+                                            </div>
+                                            @Html.TextBoxFor(m => m.captchaCode, new { @class = "form-control form-control-lg", @type = "text", @placeholder = "Enter CAPTCHA", @autocomplete = "off", @required = "required" })
+                                            <span class="error">@Html.ValidationMessageFor(m => m.captchaCode)</span><br />
+                                            <span class="error">@((TempData["Captcha"] != null) ? TempData["Captcha"] : "")</span>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <button type="submit" class="btn btn-primary btn-lg  f-s-16 " id="btnsave">LOGIN</button>
+                                        </div>
+                                        <div class="pt-3 my-2 d-md-flex justify-content-between align-items-center">
+                                            <a href="/Login/RecoverPassword" class="auth-link text-black f-w-400">Forgot password?</a>
+                                        </div>
+                                        @Html.HiddenFor(m => m.NameAseUsr)
+                                        @Html.HiddenFor(m => m.PasAseUsr)
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="toast-container position-absolute p-3 top-0 end-0">
+        @if (TempData["LoginFailed"] != null)
+        {
+            <div class="toast fade show" id="erroralert" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="me-auto">Alert</strong>
+                    <small class="text-muted">just now</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body alertmsg">
+                    @Html.Raw(TempData["LoginFailed"])
+                </div>
+            </div>
+        }
+    </div>
+
+
+
+
+
+    <script src="~/assets/js/jquery.js"></script>
+    <script src="~/assets/captcha/jquery.validate.min.js"></script>
+    <script src="~/assets/captcha/jquery.unobtrusive-ajax.js"></script>
+
+    <script src="~/js/jquery-3.5.1.min.js"></script>
+    <script src="~/js/jquery-migrate-3.4.1.min.js"></script>
+    <script src="~/js/jquery.validate.min.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.min.js"></script>
+
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    <script src="~/assets/js/bootstrap.bundle.js"></script>
+    <script src="~/js/custom.js"></script>
+    <script src="~/js/aes.js"></script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            localStorage.removeItem('remainingTime'); // Clear saved timer on timeout
+
+            $('#UserName').val('@Model?.UserName');
+            $('#Password').val('@Model?.Password');
+            $("#DNTCaptchaInputText").attr("maxlength", 6)
+            $("#btnsave").click(function () {
+                if ($('#DNTCaptchaInputText').val() != '' && $('#UserName').val() != '' && $('#Password').val() != '') {
+                    LoginEnc('@appConfig.Value.EnSheKeValue');
+                    ValidationForm();
+                }
+            });
+            function ValidationForm() {
+                if (!$("#dnsform").valid()) {
+                    return false;
+                }
+                document.getElementById('load').style.visibility = "visible";
+            }
+        });
+    </script>
+
+    <script>
+        document.onreadystatechange = function () {
+            var state = document.readyState
+            if (state == 'complete') {
+                setTimeout(function () {
+                    document.getElementById('load').style.visibility = "hidden";
+                }, 1000);
+            }
+        }
+
+
+        $(document).ajaxStart(function () {
+            document.getElementById('load').style.visibility = "visible";
+        });
+
+        $(document).ajaxStop(function () {
+            document.getElementById('load').style.visibility = "hidden";
+        });
+    </script>
+
+
+    <script>
+        function refreshImage() {
+            $.ajax({
+                url: '@Url.Action("RefreshCaptcha")',
+                type: 'GET',
+                success: function (data) {
+                    document.getElementById("captchaImage").src = data.captchaImage;
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error refreshing CAPTCHA: " + error);
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
+

@@ -1,0 +1,812 @@
+﻿@model DNAS.Domain.DTO.Note.RequestApproverNoteModel
+@using System.Security.Claims
+@inject DNAS.Application.Common.Interface.ICheckExtension commFun
+@{
+    ViewBag.ApproverDashboard = "active";
+    string UserId = ViewBag.UserId;
+}
+<style>
+    .note-container img {
+        width: 100% !important;
+    }
+
+    .note-container div {
+        width: 100% !important;
+    }
+
+    .note-container p {
+        width: 100% !important;
+    }
+
+</style>
+<div class="content-wrapper">
+    <div class="card">
+        <div class="card-body">
+            @if (Model.noteModel.NoteTitle != "" && Model.noteModel.NoteUID != "")
+            {
+                <div class="b-block d-md-flex justify-content-between  pb-4">
+                    <h4 class="f-s-22 f-w-600 text-black pb-4 text-capitalize ">@Model.noteModel.NoteTitle</h4>
+                    @* <div class="f-s-16 f-w-600 text-success "> @Model.noteModel.NoteUID</div> *@
+                    <div class="f-s-16 f-w-600 text-success">
+                        <span class="" style="display: block; margin-bottom: 10px;">@Model.noteModel.NoteUID</span>
+                        @if (Model.IsNoteApprovedDataExist)
+                        {
+                            <span class="" style="display: block;">@Html.ActionLink("All Versions", "Index", "Version", null, new { @class = "btn btn-primary" })</span>
+                        }
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="">
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Category</h3>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.CategoryName</div>
+                            <hr />
+                            @if (Model.noteModel.CategoryName == "Financial")
+                            {
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Expense Incurred At</h3>
+                                <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.ExpenseIncurredAtName</div>
+                                <hr />
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Nature Of Expense</h3>
+                                if (Model.noteModel.NatureOfExpenseCode != "")
+                                {
+                                    <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.NatureOfExpenseCode) @Model.noteModel.NatureOfExpensesName</div>
+                                }
+                                else
+                                {
+                                    <div class="f-s-14 f-w-400  text-gray-300 pb-2"> @Model.noteModel.NatureOfExpensesName</div>
+                                }
+                                <hr />
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Expense Amount</h3>
+
+                                <div class="f-s-14 f-w-400  text-gray-300 pb-2">
+                                    OPEX : <span class="f-s-14 f-w-600 text-secondary" id="opex"></span><br />
+                                    CAPEX : <span class="f-s-14 f-w-600 text-secondary" id="capex"></span><br />
+                                    <hr style="width:70%;" />
+                                    <b>Total :</b> <span class="f-s-14 f-w-600 text-secondary" id="totalamount"></span>
+                                </div>
+
+                                <hr />
+                            }
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Note Creator</h3>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.FirstName @Model.noteModel.MiddleName @Model.noteModel.LastName</div>
+                            <div class="f-s-14 text-gray-300">@Model.noteModel.Department | @Model.noteModel.Grade | @Model.noteModel.DesignationName</div>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2 pt-2">
+                                <i class="mdi  mdi-clock-outline align-middle"></i> - @Model.noteModel.DateOfCreation.ToString("dd MMM yyyy") | @Model.noteModel.DateOfCreation.ToString("hh:mm tt")
+                            </div>
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Overall Note Status</h3>
+                            <div class="f-s-15 f-w-400 pb-2">
+                                @if (Model.noteModel.NoteStatus == "Pending")
+                                {
+                                    <span style="color: #004880b8; font-weight:600;">Pending</span>
+                                }
+                                else if (Model.noteModel.NoteStatus == "Approved")
+                                {
+                                    <span style="color: #198754; font-weight:600;">Approved</span>
+                                }
+                                else if (Model.noteModel.NoteStatus == "SendBack")
+                                {
+                                    <span style="color: #ca282f; font-weight:600;">Sent Back</span>
+                                }
+                                else if (Model.noteModel.NoteStatus == "Withdraw")
+                                {
+                                    <span style="color: #ffc107; font-weight:600;">Withdrawn</span>
+                                }
+                            </div>
+
+                            @if (Model.recomendedapproverModel.Any())
+                            {
+                                <hr />
+
+                                <h3 class="f-s-16 f-w-600  text-black pb-1"><span class="recmobheading">Recommenders</span>/Reviewers</h3>
+                                @await Component.InvokeAsync("RecomendedApprover", new { viewModel = HtmlHelperExtension.ConvertToRecomendedApproverComponent(Model.recomendedapproverModel), NoteStatus = Model.noteModel.NoteStatus, viewType = "RequestApprover" })
+
+                            }
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Approvers</h3>
+
+                            @await Component.InvokeAsync("Approver", new { viewModel = HtmlHelperExtension.ConvertToApproverComponent(Model.approverModel), NoteStatus = Model.noteModel.NoteStatus, viewType = "RequestApprover", userId = UserId })
+
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Download Attachment</h3>
+                            <div class="d-flex flex-wrap gap-3">
+                                @{
+                                    int count = 0;
+                                }
+                                @foreach (var item in Model.attachmentsModel)
+                                {
+                                    <a class="btn btn-outline-primary btn-sm attatchmentbox" id="attachfile_@count" href="/Download/file?AttatchedId=@item.AttachmentId" download="@item.DocumentName">
+                                        <span class="mdi mdi-paperclip"></span>
+                                        @item.DocumentName
+                                    </a>
+                                    count++;
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="note-preview">
+                            <div class="note-container">
+                                <div style="width:100%;overflow:auto">
+                                    @Html.Raw(Model.noteModel.NoteBody)
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="post-wrapper">
+                            <div class="post">
+                                @foreach (var item in Model.commentModel)
+                                {
+                                    <div class="user-block">
+                                        <div style="display:inline-flex">
+                                            <span class="username">
+                                                @item.FirstName @item.MiddleName @item.LastName
+                                            </span>
+                                            @if (item.NoteStatus == "ApproveComment")
+                                            {
+                                                <span style="font-weight:500;padding-left: 10px;color: #888e93;font-size: 13px;">
+                                                    Approval Comment
+                                                </span>
+                                            }
+                                            else if (item.NoteStatus == "DelegateComment")
+                                            {
+                                                <span style="font-weight:500;padding-left: 10px;color: #888e93;font-size: 13px;">
+                                                    Delegation Comment
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span style="font-weight:500;padding-left: 10px;color: #888e93;font-size: 13px;">
+                                                    @commFun.AddSpace(item.NoteStatus)
+                                                </span>
+                                            }
+                                        </div>
+                                        <span class="description">
+                                            <i class="mdi  mdi-clock-outline"></i> - @item.CommentTime.ToString("dd MMM yyyy") | @item.CommentTime.ToString("hh:mm tt")
+                                        </span>
+                                    </div>
+
+                                    <div class="text-gray-300">
+                                        @Html.Raw(item.Comment)
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+
+                        <div class="pt-3 text-end mobile-btn">
+                            <button class="btn btn-info btn-lg f-s-16 me-2 fyiBtn" data-bs-toggle="modal" data-bs-target="#FyiModal" data-bs-backdrop="static">FYI</button>
+                            @if (Model.noteModel.NoteStatus == "Pending" && Model.noteModel.IsCurrentApprover)
+                            {
+                                <button class="btn btn-primary btn-lg f-s-16 me-2 delegateBtn" data-bs-toggle="modal" data-bs-target="#DelegateModal" data-bs-backdrop="static">Delegate</button>
+                                <button class="btn btn-danger btn-lg f-s-16 me-2 sendBackBtn" data-bs-toggle="modal" data-bs-target="#SendBackpopup" data-bs-backdrop="static">Send Back</button>
+                                <button class="btn btn-warning btn-lg f-s-16 me-2 queryBtn" data-bs-toggle="modal" data-bs-target="#QueryModal" data-bs-backdrop="static">Query the Initiator</button>
+
+                                @* <form action="/Note/NoteApprove" method="post" style="display:inline-flex">
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.noteModel.NoteId)
+                        @Html.HiddenFor(m => m.noteModel.UserId)
+                        <button class="btn btn-success btn-lg f-s-16 " type="submit">Approve</button>
+                        </form> *@
+                                <button class="btn btn-success btn-lg f-s-16 approveBtn" data-bs-toggle="modal" data-bs-target="#ApproveModal" data-bs-backdrop="static">Approve</button>
+                            }
+                        </div>
+
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p style="text-align: center; font-size: 20px; font-weight: 600; padding: 50px 0px 50px 0px;color: #ca282f;">This link not valid for you.</p>
+            }
+        </div>
+    </div>
+
+</div>
+<!-- content-wrapper ends -->
+<div class="modal fade" id="QueryModal" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded closeModal" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <form action="/Note/QueryInitiate" method="post" id="QueryInitiateForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Query the Initiator</label>
+                        @Html.TextAreaFor(m => m.querymodel.Comment, new { @rows = "3", @class = "form-control tagrestrict", @id = "QueryInitiateComment" })
+                        @Html.ValidationMessageFor(m => m.querymodel.Comment, null, new { @class = "text-danger" })
+                    </div>
+                    @Html.HiddenFor(m => m.noteModel.NoteId)
+                    @Html.HiddenFor(m => m.noteModel.NoteTitle)
+                    <div class="text-center pb-2 pt-4">
+                        <button type="button" class="btn btn-primary btn-lg f-s-16" id="QueryInitiateSubmit">
+                            Send
+                            Query
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="SendBackpopup" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded closeModal" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <form action="/Note/SendBack" method="post" id="SendBackForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Comments</label>
+                        @Html.TextAreaFor(m => m.querymodel.Comment, new { @rows = "3", @class = "form-control tagrestrict", @id = "SendBackComment" })
+                        @Html.ValidationMessageFor(m => m.querymodel.Comment, null, new { @class = "text-danger" })
+                    </div>
+                    @Html.HiddenFor(m => m.noteModel.NoteId)
+                    @Html.HiddenFor(m => m.noteModel.NoteTitle)
+                    <div class="text-center pb-2 pt-4">
+                        <button type="button" class="btn btn-primary btn-lg f-s-16" id="SendBackSubmit">
+                            Send
+                            Back
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="FyiModal" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded closeModal" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <form action="/Note/ForYourInformation" method="post" id="FyiForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Employee Id / Name</label>
+                        @Html.HiddenFor(m => m.noteModel.SearchKey, new { @class = "insertclass", @id = "FyiComment" })
+                        <input type="text" class="form-control form-control-lg tagrestrict SearchKeycls" />
+                        <ul style="list-style: none; border: 1px solid #d9d9d9;padding-left:1rem; display:none;" class="SearchKeyList" @* id="SearchKeyList" *@></ul>
+                    </div>
+                    @Html.HiddenFor(m => m.noteModel.NoteId)
+                    @Html.HiddenFor(m => m.noteModel.NoteTitle)
+                    @Html.HiddenFor(m => m.noteModel.UserId)
+                    <div class="text-center pb-2 pt-4">
+                        <button type="button" class="btn btn-primary btn-lg f-s-16" id="FyiSubmit">
+                            Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="DelegateModal" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded closeModal" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <form action="/Note/AsignDelegate" method="post" id="AsignDelegateform">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Employee Id / Name</label>
+                        @* @Html.TextBoxFor(m => m.noteModel.SearchKey, new { @class = "form-control form-control-lg tagrestrict", @id = "AsignDelegateSearchKey" }) *@
+                        @Html.HiddenFor(m => m.noteModel.SearchKey, new { @class = "insertclass", @id = "AsignDelegateSearchKey" })
+                        <input type="text" class="form-control form-control-lg tagrestrict SearchKeycls" />
+                        <ul style="list-style: none; border: 1px solid #d9d9d9;padding-left:1rem; display:none;" class="SearchKeyList" @* id="SearchKeyList" *@></ul>
+                    </div>
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Delegate Comment</label>
+                        @Html.TextAreaFor(m => m.querymodel.Comment, new { @rows = "3", @class = "form-control form-control-lg tagrestrict", @id = "AsignDelegateComment" })
+                        @Html.ValidationMessageFor(m => m.querymodel.Comment, null, new { @class = "text-danger" })
+                    </div>
+                    @Html.HiddenFor(m => m.noteModel.NoteId)
+                    @Html.HiddenFor(m => m.noteModel.NoteTitle)
+                    <div class="text-center pb-2 pt-4">
+                        <button type="button" class="btn btn-primary btn-lg f-s-16" id="DelegateSubmit">
+                            Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="ApproveModal" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded closeModal" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <form action="/Note/NoteApprove" method="post" id="NoteApproveform">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Comment</label>
+                        @Html.TextAreaFor(m => m.querymodel.Comment, new { @rows = "3", @class = "form-control tagrestrict", @id = "ApprovalComment" })
+                        @Html.ValidationMessageFor(m => m.querymodel.Comment, null, new { @class = "text-danger" })
+                    </div>
+                    @Html.HiddenFor(m => m.noteModel.NoteId)
+                    @Html.HiddenFor(m => m.noteModel.UserId)
+                    <div class="text-center pb-2 pt-4">
+                        <button type="button" class="btn btn-primary btn-sm" id="ApprovalSubmit">
+                            Approve
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Individual Aprover Reviewer addition modal-->
+<div class="modal fade" id="ReviewerApproverModal" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded ReviewerApproverModalClose" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+
+                <!--Add approver/reviewer -->
+                <div class="mb-3">
+                    <label for="queryTextarea" class="form-label approverReviewerTitle">Add Reviewer</label>
+                </div>
+                <div class="row d-flex">
+                    <div class="col-12">
+                        <div style="padding-top:1px;padding-bottom:1px;">
+                            <input type="hidden" id="tempApproverReviewerUserId" />
+                            <input type="hidden" id="apvrserialno" />
+                            <input type="text" class="form-control form-control-lg" id="approverReviewerSearch" autocomplete="off" />
+                            <ul style="list-style: none; border: 1px solid #d9d9d9;padding-left:1rem; display:none;" id="approverReviewerList">
+                            </ul>
+                        </div>
+                    </div>
+                    @* <div class="col-12">
+                    <label for="Login-Type" class="form-label">User Type</label>
+                    <div class="mb-4">
+                    <div class="d-flex flex-wrap gap-3 pt-2">
+                    <div>
+                    <input type="radio" name="UserType" value="1" checked /><label style="padding-left:5px;">Public</label>&nbsp;&nbsp;
+                    </div>
+                    <div>
+                    <input type="radio" name="UserType" value="0" /><label style="padding-left:5px;">Private</label>
+                    </div>
+                    </div>
+                    </div>
+                    </div> *@
+
+                    <div class="col-5 mobile-pluse-btn" style="padding-top:8px;"><span class="remove btn btn-outline-success btn-sm btn-rounded" id="approverReviewerAdd" style="display:none;">Click Here To Add <i class="ti-plus"> </i></span></div>
+                </div>
+                <div class="d-flex justify-content-between pt-2 pb-2 align-items-center ">
+                    <span class="form-label approverReviewerNotFound"></span>
+                </div>
+                <!--Add approver/reviewer -->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section PreScripts
+{
+    <script src="~/assets/js/jquery-3.5.1.min.js"></script>
+    <script src="~/assets/js/bootstrap.bundle.min.js"></script>
+}
+
+
+@section PostScripts {
+    <script src="~/js/jquery-migrate-3.4.1.min.js"></script>
+    <script src="~/js/jquery.validate.min.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/custom-validator.js" asp-append-version="true"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var tempSuccessData = '@TempData["FyiMessageSuccess"]';
+            var tempFailedData = '@TempData["FyiMessageFailed"]';
+            var wrongApprovalEmail = '@TempData["WrongApprovalEmail"]';
+            var commentblank = '@TempData["commentmsg"]';
+            if (tempSuccessData != '') {
+                sucesstoast();
+                $('.sucessmsg').html(tempSuccessData);
+            }
+            if (tempFailedData != '') {
+                errortoast();
+                $('.alertmsg').html(tempFailedData);
+            }
+            if (wrongApprovalEmail != '') {
+                errortoast();
+                $('.alertmsg').html(wrongApprovalEmail);
+            }
+            if (commentblank != '') {
+                errortoast();
+                $('.alertmsg').html(commentblank);
+            }
+            var opex = '@Model.noteModel.OperationalExpenditure';
+            if (opex != '') {
+                $("#opex").text(formatNumberWithPattern(opex));
+            }
+
+            var capex = '@Model.noteModel.CapitalExpenditure';
+            if (capex != '') {
+                $("#capex").text(formatNumberWithPattern(capex));
+            }
+
+            var totalamount = '@Model.noteModel.TotalAmount';
+            if (totalamount != '') {
+                $("#totalamount").text(formatNumberWithPattern(totalamount));
+            }
+        });
+        $(".tagrestrict").on("keyup blur", function () {
+            let reg = /<(.|\n)*?>/g;
+            if (reg.test($(this).val()) == true) {
+                let Input = $(this).val();
+                let no_spl_char = Input.replace(reg, "");
+                $(this).val(no_spl_char);
+            }
+        });
+
+
+        $("#DelegateSubmit").click(function () {
+            if ($("#AsignDelegateSearchKey").val() == '') {
+                $("#AsignDelegateSearchKey").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#AsignDelegateSearchKey").css("border", "1px solid #d9d9d9");
+            }
+            if ($("#AsignDelegateComment").val() == '') {
+                $("#AsignDelegateComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#AsignDelegateComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#AsignDelegateform').submit();
+        });
+        $("#ApprovalSubmit").click(function () {
+            if ($("#ApprovalComment").val() == '') {
+                $("#ApprovalComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#ApprovalComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#NoteApproveform').submit();
+        });
+        $("#QueryInitiateSubmit").click(function () {
+            if ($("#QueryInitiateComment").val() == '') {
+                $("#QueryInitiateComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#QueryInitiateComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#QueryInitiateForm').submit();
+        });
+        $("#FyiSubmit").click(function () {
+            if ($("#FyiComment").val() == '') {
+                $("#FyiComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#FyiComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#FyiForm').submit();
+        });
+        $("#SendBackSubmit").click(function () {
+            if ($("#SendBackComment").val() == '') {
+                $("#SendBackComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#SendBackComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#SendBackForm').submit();
+        });
+        function formatNumberWithPattern(num) {
+            var decimalPart = (num % 1).toFixed(2).substring(1);  //fraction number
+            num = num.toString().split('.')[0];
+            let newstr = '';
+            if (num.length > 10) {
+                newstr = num.slice(0, -10) + ',';
+                num = num.slice(num.length - 10, num.length);
+            }
+            if (num.length > 7) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -7) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -7) + ',';
+                }
+                num = num.slice(num.length - 7, num.length);
+            }
+            if (num.length > 5) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -5) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -5) + ',';
+                }
+                num = num.slice(num.length - 5, num.length);
+            }
+            if (num.length > 3) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -3) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -3) + ',';
+                }
+                num = num.slice(num.length - 3, num.length);
+            }
+            if (num.length <= 3) {
+                newstr = newstr + num;
+            }
+            newstr = '₹ ' + newstr + decimalPart;
+
+            return newstr;
+        }
+
+
+        //#region set Reviewer Or Approver
+
+        let suffixPrefix = "";
+        let currentDiv = "";
+        let currentButtonClick = "";
+        $(document).on('click', '.reviewer, .approver', function () {
+            debugger;
+            currentButtonClick = $(this).data('click-value');
+
+            if ($(this).data('click-value') == "reviewer") {
+                suffixPrefix = 1;
+                $('.approverReviewerTitle').text("Add Reviewer");
+            }
+
+            if ($(this).data('click-value') == "approver") {
+                suffixPrefix = 2;
+                $('.approverReviewerTitle').text("Add Approver");
+            }
+
+            currentDiv = $(this).closest('.approver-box');
+        });
+
+        //#endregion
+
+        //#region Approver/Reviewer search
+
+        $(document).on('keyup', '#approverReviewerSearch', function () {
+            $("#approverReviewerAdd").hide();
+            $.getJSON("/note/fetchReviewerOrApproverList", { searchKey: $("#approverReviewerSearch").val(), noteId: $('#noteModel_NoteId').val() }, function (data) {
+                if (data != null) {
+                    let item = '';
+                    $.each(data, function (i, j) {
+                        // item += "<li style='cursor:pointer;padding-top:15px' class='createapprover' onclick='getApproverReviewer(" + data[i].value + ")'><p class='underpara'><span id='approverReviewerListId_" + data[i].value + "' class='underspan'>" + data[i].key + "</span></p></li>";
+                        item += "<li style='cursor:pointer;padding-top:15px' class='createapprover' onclick='getApproverReviewer(" + i + ")'><p class='underpara'><span id='approverReviewerListId_" + i + "' class='underspan' data-userId=" + data[i].value + ">" + data[i].key + " </span></p></li>";
+                    });
+                    $("#approverReviewerList").html(item);
+                }
+            });
+            $("#approverReviewerList").css("display", "block");
+        });
+
+        function getApproverReviewer(id) {
+            let str = $("#approverReviewerListId_" + id).text();
+            var userId = $("#approverReviewerListId_" + id).data("userid");
+            $("#approverReviewerSearch").val(str);
+            $("#tempApproverReviewerUserId").val(userId);
+            $("#approverReviewerAdd").show();
+            $("#approverReviewerList").hide();
+        }
+
+        //#endregion
+
+        //#region Add Approver/Reviewer section
+
+        $(document).on('click', '#approverReviewerAdd', function () {
+            let userId = $("#tempApproverReviewerUserId").val();
+
+            var selectedUser = $("#approverReviewerSearch").val().split('|');
+            var name = selectedUser[0];
+            var designation = selectedUser[1];
+            var grade = selectedUser[2];
+            var department = selectedUser[3];
+            var visibilityMode = 1;// parseInt($('input[name="UserType"]:checked').val());
+            var currentUserType = "";
+
+            if (currentButtonClick == "reviewer")
+                currentUserType = "Reviewer";
+            if (currentButtonClick == "approver")
+                currentUserType = "Approver";
+
+            var approverBox = `<div class="approver-box">
+                                                            <div style="display:flex;justify-content: space-between;">
+                                                                 <h3 class="f-s-15 f-w-600 text-black pb-1">${name}</h3>
+                                                                 <span style="font-size: 12px;margin: 3px 5px;">(Added as ${currentUserType})</span>
+                                                            </div>
+                                                            <div class="f-s-14 text-gray-300" style="padding-bottom:5px;">${designation} | ${grade} | ${department}</div>
+                                                            <div class="f-s-14 text-gray-300 pt-1" style="padding-bottom:5px;">Status- <span class="notepending">Pending</span></div>
+                                                       </div>`;
+
+            // let serialno = $("#apvrserialno").val();
+            let noteId = $('#noteModel_NoteId').val();
+            $.post("/note/insertReviewerApprover", { approverReviewerId: $("#tempApproverReviewerUserId").val(), noteId: $('#noteModel_NoteId').val(), prefixSuffix: suffixPrefix, addedBy: '@UserId', visibilityMode: visibilityMode }, function (data) {
+                if (data.result != null) {
+                    if (data.result.isSuccess == true) {
+                        var msg = "";
+                        if (currentButtonClick == "reviewer") {
+                            showApproverReviewer(data.isCurrentApprover, approverBox, currentButtonClick);
+                            msg = "Reviewer added successfully!";
+                        }
+                        if (currentButtonClick == "approver") {
+                            showApproverReviewer(data.isCurrentApprover, approverBox, currentButtonClick);
+                            msg = "Approver added successfully!";
+                        }
+                        // Trigger the click event programmatically
+                        $(".ReviewerApproverModalClose").trigger('click');
+
+                        //show message
+                        sucesstoast();
+                        $('.sucessmsg').html(msg);
+
+                        //hide approver reviewer button
+                        $('.' + currentButtonClick).hide();
+                    }
+                }
+            });
+        });
+
+        function showApproverReviewer(isCurrentApprover, approverBox, currentButtonClick) {
+            if (currentButtonClick == "reviewer") {
+                $(approverBox).insertBefore(currentDiv);
+                $('.delegateBtn,.sendBackBtn,.queryBtn,.approveBtn').remove();
+                $(currentButtonClick).hide();
+            }
+
+            if (currentButtonClick == "approver") {
+                $(approverBox).insertAfter(currentDiv);
+                $(currentButtonClick).hide();
+            }
+        }
+
+        //#endregion
+
+        //#region Clear Modal Data
+
+        $(document).on('shown.bs.modal', '#ReviewerApproverModal', function () {
+            ClearModalData(this);
+        });
+        $(document).on('click', '.ReviewerApproverModalClose', function () {
+            ClearModalData(this);
+        });
+
+        function ClearModalData(_this) {
+            // Clear input fields
+            $('#tempApproverReviewerUserId').val('');
+            $('#apvrserialno').val('');
+            $('#approverReviewerSearch').val('');
+
+            // Hide and clear the suggestions list
+            $('#approverReviewerList').hide().empty();
+
+            // Hide the "Add" button
+            $('#approverReviewerAdd').hide();
+
+            // Clear the "Not Found" message
+            $('.approverReviewerNotFound').text('');
+        }
+
+        $(document).on('click', '.closeModal', function () {
+            debugger;
+            var form = $(this).closest('.modal').find("form");    //get the closest form
+
+            if (form.length) {
+                form[0].reset(); //reset all form fields
+
+                // Clear validation error messages
+                form.find(".input-validation-error").removeClass("input-validation-error");
+                form.find(".field-validation-error").removeClass("field-validation-error").addClass("field-validation-valid");
+                form.find(".text-danger").text("");     // Remove validation text if present
+            }
+
+            $(this).find("ul").empty().hide(); // Remove all list items & hide <ul>
+        });
+
+        //#endregion
+
+        $("#attachfile_0").hover(function () {
+            const link = document.querySelector('a#attachfile_0');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_1").hover(function () {
+            const link = document.querySelector('a#attachfile_1');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_2").hover(function () {
+            const link = document.querySelector('a#attachfile_2');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_3").hover(function () {
+            const link = document.querySelector('a#attachfile_3');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_4").hover(function () {
+            const link = document.querySelector('a#attachfile_4');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+
+
+        $(document).on('keyup', '.SearchKeycls', function () {
+            //$(".addsearchkeybtn").hide();
+            $.getJSON("/note/fetchReviewerOrApproverList", { searchKey: $(this).val(), noteId: $('#noteModel_NoteId').val() }, function (data) {
+                if (data != null) {
+                    let item = '';
+                    $.each(data, function (i, j) {
+                        item += `<li style="cursor:pointer;padding-top:15px" class="selectappr" data-username="${data[i].key}" data-userval="${data[i].value}"><p class='underpara'><span id="SearchListId_${data[i].value}" class="underspan">${data[i].key}</span></p></li>`;
+                    });
+                    $(".SearchKeyList").html(item);
+                }
+            });
+            $(".SearchKeyList").css("display", "block");
+        });
+
+        $(document).on("click", ".selectappr", function () {
+            //console.log($(this).attr("data-userval"));
+            let id = $(this).attr("data-userval");
+            let str = $(this).attr("data-username");
+            $(".SearchKeycls").val(str);
+            $(".insertclass").val(id);
+            $(".SearchKeyList").hide();
+        });
+
+    </script>
+}

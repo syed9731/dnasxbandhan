@@ -1,0 +1,131 @@
+﻿@model DNAS.Domian.DTO.WithdrawList.WithdrawListModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Withdraw = "active";
+}
+
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="f-w-700 f-s-32">Withdraw List</h1>
+    </div>
+
+    <form id="searchForm" method="get" action="/Note/WithdrawList">
+        <div class="dashboard-searchform gap-3">
+            <div class=" search-section">
+                @Html.TextBoxFor(model => model.withdrawlist.StartDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerStartDate" })
+            </div>
+
+            <div class=" search-section">
+                @Html.TextBoxFor(model => model.withdrawlist.EndDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerEndDate" })
+            </div>
+            <div class="search-section">
+                @Html.DropDownListFor(model => model.withdrawlist.Category, new SelectList(new[]
+                         {
+                new SelectListItem { Value = "", Text = "Select Category" },
+                new SelectListItem { Value = "Financial", Text = "Financial" },
+                new SelectListItem { Value = "Non Financial", Text = "Non Financial" }
+                }, "Value", "Text"), new { @class = "form-control form-control-lg search-field", id = "categoryField", name = "category" })
+            </div>
+
+            <div class="search-section gap-3">
+                <button type="submit" class="btn btn-primary search-btn">Search</button>
+
+                <input type="button" id="DownloadWithdrawList" class="btn btn-primary search-btn" value="Download Excel" />
+            </div>
+        </div>
+    </form>
+
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive md-height ">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Withdraw Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.withdrawListOutModels)
+                                {
+                                    <tr>
+                                        <td>@item.NoteTitle</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@(Convert.ToDateTime(item.WithdrawDate).ToString("dd MMM yyyy"))</td>
+                                        <td>
+                                            <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/WithdrawNoteDetails?p=@item.NoteId">
+                                                <i class="ti-eye"></i>
+                                            </a>
+
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PostScripts {
+
+    <link href="~/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <script src="~/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        $(function () {
+            $("#datePickerStartDate, #datePickerEndDate").datepicker({
+                autoclose: true,
+                format: "dd/mm/yyyy",
+                todayHighlight: true,
+            });
+        });
+
+        $('#DownloadWithdrawList').click(function () {
+            var jsonData = JSON.stringify(@Html.Raw(Json.Serialize(Model)));
+
+            $.ajax({
+                url: '@Url.Action("DownloadWithdrawList", "Note")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonData,
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (response) {
+                    var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var url = window.URL.createObjectURL(blob);
+
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'WithdrawNoteReport.xlsx';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            if ('@TempData["msg"]' != '') {
+                sucesstoast();
+                $('.sucessmsg').html('@TempData["msg"]');
+            }
+            if ('@TempData["errormsg"]' != '') {
+                errortoast();
+                $('.alertmsg').html('@TempData["errormsg"]');
+            }
+
+        });
+    </script>
+}

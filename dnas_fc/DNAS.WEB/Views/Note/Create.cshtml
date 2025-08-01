@@ -1,0 +1,1055 @@
+﻿@using DNAS.Domian.Common
+@using Microsoft.Extensions.Options
+@model DNAS.Domian.DTO.Note.NoteModel
+@* @inject IOptions<AppConfig> appConfig *@
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.CreateNewNotes = "active";
+    ViewBag.ISAjexNotNeed = "true";
+    int i = 1;
+
+}
+<link rel="stylesheet" href="~/assets/vendor/select2/select2.min.css" />
+<link rel="stylesheet" href="~/assets/summernote/npm/summernote@0.8.18/dist/summernote.min.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/assets/summernote/npm/summernote@0.8.18/dist/summernote-helper.css" rel="stylesheet" asp-append-version="true" />
+
+<style>
+    .underpara {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .note-editor {
+        background: #fff;
+    }
+
+    .btn-rounded .ti-plus, .btn-rounded .ti-close {
+        vertical-align: top;
+    }
+
+    span {
+        display: inline-block;
+    }
+
+    .note-image-input.form-control-file.note-form-control.note-input {
+        padding-left: 5px;
+    }
+</style>
+<div class="content-wrapper">
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-6">
+                    <h4 class="f-s-22 f-w-600 text-black pb-4 text-capitalize ">Create Note</h4>
+                </div>
+                <div class="col-6">
+                </div>
+            </div>
+
+            <form action="/Note/Create" method="post" id="dnsform" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.CategoryName)
+                @Html.HiddenFor(m => m.ApproverIdList)
+                @Html.HiddenFor(m => m.RecomendedApproverIdList)
+                @Html.HiddenFor(m => m.NoteId)
+                <input type="hidden" id="gstbdg" value="@TempData["encdata"]" />
+
+                <input type="hidden" value="@Model.NoteState" id="NoteState" name="NoteState" />
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <span class="form-label">Title*</span>
+                        @Html.TextBoxFor(m => m.NoteTitle, new { @class = "form-control  form-control-lg tagrestrict", @placeholder = "Note Title", @id = "notetitle", @autocomplete = "off" })
+                        <span class="error">@Html.ValidationMessageFor(m => m.NoteTitle)</span>
+                    </div>
+                    @if (ViewBag.CategoryList != null)
+                    {
+                        <div class="col-md-6">
+                            <span class="form-label">Category*</span>
+                            @Html.DropDownListFor(m => m.CategoryId, ViewBag.CategoryList as SelectList, "Choose...", new { @class = "form-select form-select-lg category-select" })
+                            <span class="error">@Html.ValidationMessageFor(m => m.CategoryId)</span>
+                        </div>
+                    }
+                    <div class="col-md-6 amount-box">
+                        <span class="form-label">Expenses Incurred At*</span>
+                        <select id="ExpensesIncurredAtid" class="form-select form-select-lg" style="padding: 0.84rem 1rem;" name="ExpenseIncurredAtId">
+                        </select>
+                    </div>
+                    <div class="col-md-6 amount-box">
+                        <span class="form-label">Nature Of Expenses*</span>
+                        <select id="NatureOfExpensesId" class="form-select form-select-lg" style="padding: 0.84rem 1rem;" name="NatureOfExpensesId">
+                        </select>
+
+                    </div>
+                    <div class="col-md-4 amount-box">
+                        <span class="form-label">Capital Expenditure*</span>
+                        @Html.TextBoxFor(m => m.CapitalExpenditure, new { @class = "form-control form-control-lg numberonly", @placeholder = "Amount in ₹", @id = "CapitalExpenditure", @autocomplete = "off" })
+
+                    </div>
+                    <div class="col-md-4 amount-box">
+                        <span class="form-label">Operational Expenditure*</span>
+                        @Html.TextBoxFor(m => m.OperationalExpenditure, new { @class = "form-control form-control-lg numberonly", @placeholder = "Amount in ₹", @id = "OperationalExpenditure", @autocomplete = "off" })
+
+                    </div>
+                    <div class="col-md-4 amount-box">
+                        <span class="form-label">Total Amount</span>
+                        @Html.TextBoxFor(m => m.TotalAmount, new { @class = "form-control form-control-lg", @placeholder = "0", @readonly = "readonly", @id = "totalamount" })
+
+                    </div>
+
+                    <div class="col-12">
+                        <span class="form-label">Note* </span>
+                        @Html.TextAreaFor(model => model.NoteBody, new { @class = "notecontent", id = "summernote" })
+
+
+                    </div>
+
+                    <div class="row g-4">
+                        <span class="form-label">Attachments</span>
+                        <span>(You can include a maximum of 5 attachments and file size should below 5MB)</span>
+                        <div class="col-md-6" style="display:inline-flex">
+                            <input name="AttachFiles" class="form-control form-control-lg" type="file" style="width:90%;" id="fileattach1" onchange="chooseattachment(1)">
+                            @*  <a class="remove btn btn-outline-danger btn-sm btn-rounded" style="padding: 9px 13px 0px 13px;margin-left: 10px; display:none;" id="crossattach1" onclick="removeattachfile(1)" role="button"> <i class='ti-close'> </i></a>*@
+
+                            <button type="button" class="remove btn btn-outline-danger btn-sm btn-rounded"
+                                    style="padding: 9px 13px 0px 13px; margin-left: 10px; display: none;"
+                                    id="crossattach1"
+                                    onclick="removeattachfile(1)"
+                                    aria-label="Remove attachment">
+                                <i class="ti-close"></i>
+                            </button>
+
+
+                        </div>
+                        <div class="col-md-6" style="display:inline-flex">
+                            <input name="AttachFiles" class="form-control form-control-lg" type="file" style="width:90%;" id="fileattach2" onchange="chooseattachment(2)">
+                            <button type="button" class="remove btn btn-outline-danger btn-sm btn-rounded" style="padding: 9px 13px 0px 13px;margin-left: 10px; display:none;" id="crossattach2" onclick="removeattachfile(2)" aria-label="Remove attachment"> <i class='ti-close'> </i></button>
+                        </div>
+                        <div class="col-md-6" style="display:inline-flex">
+                            <input name="AttachFiles" class="form-control form-control-lg" type="file" style="width:90%;" id="fileattach3" onchange="chooseattachment(3)">
+                            <button type="button" class="remove btn btn-outline-danger btn-sm btn-rounded" style="padding: 9px 13px 0px 13px;margin-left: 10px; display:none;" id="crossattach3" onclick="removeattachfile(3)" aria-label="Remove attachment"> <i class='ti-close'> </i></button>
+                        </div>
+                        <div class="col-md-6" style="display:inline-flex">
+                            <input name="AttachFiles" class="form-control form-control-lg" type="file" style="width:90%;" id="fileattach4" onchange="chooseattachment(4)">
+                            <button type="button" class="remove btn btn-outline-danger btn-sm btn-rounded" style="padding: 9px 13px 0px 13px;margin-left: 10px; display:none;" id="crossattach4" onclick="removeattachfile(4)" aria-label="Remove attachment"> <i class='ti-close'> </i></button>
+                        </div>
+                        <div class="col-md-6" style="display:inline-flex">
+                            <input name="AttachFiles" class="form-control form-control-lg" type="file" style="width:90%;" id="fileattach5" onchange="chooseattachment(5)">
+                            <button type="button" class="remove btn btn-outline-danger btn-sm btn-rounded" style="padding: 9px 13px 0px 13px;margin-left: 10px; display:none;" id="crossattach5" onclick="removeattachfile(5)" aria-label="Remove attachment"> <i class='ti-close'> </i></button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary float-end btn-lg f-s-16" type="button" id="notepreview">Preview Note</button>
+                        </div>
+                    </div>
+                    <div class="col-md-12" id="recomendedapproverdiv" style="display: none;">
+                        <div class="d-flex justify-content-between pt-2 pb-2 align-items-center">
+                            <span class="form-label">Recommendation/Reviewer <span style="font-size: 13px; font-weight: 400; ">(You can select up to 5 recommenders/reviewers)</span></span>
+                        </div>
+                        <div>
+                            <div class="row" style="padding-top: 1px; padding-bottom: 1px; display: none;" id="confirmrecomendedapprover">
+                            </div>
+                        </div>
+                        <div class="row d-flex">
+                            <div class="col-9">
+                                <div style="padding-top:1px;padding-bottom:1px;">
+                                    <input type="hidden" id="recomendedtempapproveruid" />
+                                    <input type="hidden" id="recomendedapvrserialno" />
+                                    <input type="text" class="form-control form-control-lg" id="recomendedapproversearch" autocomplete="off" />
+                                    <ul style="list-style: none; border: 1px solid #d9d9d9;padding-left:1rem; display:none;" id="recomendedapproverlist">
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-3 mobile-pluse-btn" style="padding-top:8px;"><span class="remove btn btn-outline-success btn-sm btn-rounded" id="recomendedapproveradd" style="display:none;">Click Here To Add <i class="ti-plus"> </i></span> </div>
+                        </div>
+                        <div class="d-flex justify-content-between pt-2 pb-2 align-items-center ">
+                            <span class="form-label Recomandedapprovernotfound"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-12  col-xl-9">
+                        <div class="d-flex justify-content-between pt-2 pb-2 align-items-center">
+                            <span class="form-label">Add Approver* <span style="font-size: 13px; font-weight: 400; ">(You Can Select Up To 7 Approvers)</span></span>
+                        </div>
+                        <div>
+                            <div class="row" style="padding-top: 1px; padding-bottom: 1px; display: none;" id="confirmapprover">
+                                @if (ViewBag.ApproverList != null && ViewBag.ApproverList.Count > 0 && ViewBag.ApproverList.Count <= 7)
+                                {
+                                    foreach (DNAS.Domian.DTO.Login.UserMasterModel dr in ViewBag.ApproverList)
+                                    {
+                                        <div class="col-9 mb-2">
+                                            <input type="hidden" id="confirmserial_@i" value="@i" />
+                                            <input type="hidden" id="confirmuserid_@i" class="hiddenclass" value="@dr.UserId" />
+                                            <input type="text" class="form-control form-control-lg" readonly id="confirmvalue_@i" value="@dr.FirstName  @(dr.MiddleName != " " ? dr.MiddleName : " ")   @dr.LastName  |   @dr.Department  |  @dr.Grade  |  @dr.Designation" />
+                                            <input type="hidden" id="removeAppconfirm_@i" value="@dr.ApproverId" />
+                                        </div>
+                                        <div class="col-1" style="padding-top:8px;"><span class="remove btn btn-outline-danger btn-sm btn-rounded" data-val="@i" onclick="removeapprover(@i)" id="removeconfirm_@i" tabIndex="0" role="button"><i class="ti-close"></i></span></div>
+                                        i++;
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="row d-flex">
+                            <div class="col-9">
+                                <div style="padding-top:1px;padding-bottom:1px;">
+                                    <input type="hidden" id="tempapproveruid" />
+                                    <input type="hidden" id="apvrserialno" />
+                                    <input type="text" class="form-control form-control-lg" id="approversearch" autocomplete="off" />
+                                    <ul style="list-style: none; border: 1px solid #d9d9d9;padding-left:1rem; display:none;" id="approverlist">
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-3 mobile-pluse-btn" style="padding-top:8px;"><span class="remove btn btn-outline-success btn-sm btn-rounded" id="approveradd" style="display:none;">Click Here To Add <i class="ti-plus"> </i></span></div>
+                        </div>
+                        <div class="d-flex justify-content-between pt-2 pb-2 align-items-center ">
+                            <span class="form-label arrovernotfound"></span>
+                        </div>
+                    </div>
+                    <div class="text-center pb-2 d-flex gap-3 justify-content-end">
+
+                        <button type="button" class="btn btn-secondary btn-lg f-s-16 me-2" id="btnsavetemplate">Save as a Template</button>
+                        <button class="btn btn-primary btn-lg f-s-16 loadervisible" type="button" id="btnsave">Save and Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+
+<div class="modal fade" id="success_popup" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <div class="modal-top-icon f-s-60 text-center text-success">
+                    <i class="mdi mdi-alert-circle-outline"></i>
+                </div>
+                <h4 class="text-center f-s-16 text-success pt-1 pb-3" id="successmsg">
+                    .
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_popup" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="staticBackdropLabel">.</h3>
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="note-container" id="previewnotebody">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="view_TemplateName" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Template Name</h4>
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="note-container" style="background:none;">
+                    <input type="text" name="TemplateName" id="TemplateName" class="form-control  form-control-lg tagrestrict" placeholder="Template Name" />
+                </div>
+                <button style="float:right" type="button" class="btn btn-secondary" id="btnSaveTemp">Save Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="ChooseTemplate_popup" tabindex="-1" aria-labelledby="choose_popupLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form action="/note/DeleteDraft" method="post">
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                                aria-label="Close">
+                            <i class="mdi mdi mdi-close"></i>
+                        </button>
+                    </div>
+
+                    <div class="modal-top-icon f-s-60 text-center text-danger">
+                        <i class="mdi mdi-information-outline" style="color: #1f44ff;"></i>
+                    </div>
+                    <h2 class="text-center f-s-24 text-primary pt-1 pb-3">
+                        Templates
+                    </h2>
+                    <p class="text-center f-s-15 pb-2">
+                        Do you want to choose template?
+                    </p>
+                    <div class="text-center pb-2 d-flex gap-2 justify-content-center">
+                        <button type="button" class="btn btn-secondary btn-lg f-s-16" data-bs-dismiss="modal">
+                            No
+                        </button>
+                        <input type="hidden" name="noteid" id="Draftnote" />
+                        <a href="/Template/Library" class="btn btn-primary btn-lg f-s-16 loadervisible">Yes</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section PreScripts
+{
+    <script src="~/assets/js/jquery-3.5.1.min.js"></script>
+    <script src="~/assets/js/bootstrap.bundle.min.js"></script>
+
+}
+
+@section PostScripts {
+    <script src="/assets/summernote/npm/summernote@0.8.18/dist/summernote.min.js" asp-append-version="true"></script>
+    <script src="~/js/jquery-migrate-3.4.1.min.js"></script>
+    <script src="~/js/jquery.validate.min.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/custom-validator.js" asp-append-version="true"></script>
+    <script src="~/js/aes.js"></script>
+    <script src="~/js/custom.js" asp-append-version="true"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            getuserlist();
+            let count = '@ViewBag.ApproverList';
+            if ('@Model.TemplateId' == '' && '@Model.NoteId' == '' && '@TempData["msg"]' == '' && '@TempData["errormsg"]' == '') {
+                $('#ChooseTemplate_popup').modal('toggle');
+            }
+            if (count != null) {
+                $("#confirmapprover").show();
+            }
+            if ('@TempData["msg"]' != '') {
+                sucesstoast();
+                $('.sucessmsg').html('@TempData["msg"]');
+            }
+            if ('@TempData["errormsg"]' != '') {
+                errortoast();
+                $('.alertmsg').html('@TempData["errormsg"]');
+            }
+
+            var notecontent = '';
+            var oldcontnet = '';
+            $('#summernote').summernote({
+                callbacks: {
+                    onChange: function (contents, $editable) {
+
+                        console.log('onChange:', contents, $editable);
+                        notecontent = contents;
+
+                    },
+                }
+            });
+            var interval = setInterval(function () { savenote(); }, 3000);
+
+            function savenote() {
+                console.log('t1');
+                if ($('#notetitle').val() == '' || $('#CategoryId').val() == '' || oldcontnet == notecontent) {
+                    return false;
+                }
+                if ($("#NoteId").val() != '') {
+                    console.log('t2');
+
+                    var request = { noteid: $("#NoteId").val(), NoteBody: notecontent };
+                    var headers = {};
+                    headers['RequestVerificationToken'] = $('input[name="__RequestVerificationToken"]').val();
+                    $.ajax({
+                        type: "post",
+                        cache: false,
+                        url: "/note/UpdateNoteBody",
+                        data: JSON.stringify(request),
+                        dataType: "json",
+                        headers: headers,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (result) {
+                            oldcontnet = notecontent;
+                            sucesstoast();
+                            $('.sucessmsg').html('Saved to draft');
+                        },
+                        error: function (result) {
+                            console.log("No Connection to server");
+                        },
+                    });
+                }
+                else {
+
+                    var request = { NoteBody: notecontent };
+                    var headers = {};
+                    headers['RequestVerificationToken'] = $('input[name="__RequestVerificationToken"]').val();
+                    $.ajax({
+                        type: "post",
+                        cache: false,
+                        url: "/note/InsertNoteBody",
+                        data: JSON.stringify(request),
+                        dataType: "json",
+                        headers: headers,
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            if (data != null) {
+                                $("#NoteId").val(data.noteId);
+                                oldcontnet = notecontent;
+                                sucesstoast();
+                                $('.sucessmsg').html('Saved to draft');
+                            }
+                        },
+                        error: function (textStatus, errorThrown) {
+                            console.log(textStatus);
+                        }
+                    });
+                }
+
+            }
+
+
+
+
+            if ($("#CategoryId option:selected").text() == "Financial") {
+
+                let ExpInAt = '@Model.ExpenseIncurredAtId';
+                if (ExpInAt != "") {
+                    $.getJSON("/note/fetchExpensesIncurredAt", { idd: $("#CategoryId").val() }, function (data) {
+                        if (data != null) {
+                            let items = '';
+                            items += "<option value=''>Select</option>";
+                            $.each(data, function (i, j) {
+                                if (ExpInAt == data[i].value) {
+                                    items += "<option selected value='" + data[i].value + "'>" + data[i].key + "</option>";
+                                }
+                                else {
+                                    items += "<option value='" + data[i].value + "'>" + data[i].key + "</option>";
+                                }
+                            });
+                            $("#ExpensesIncurredAtid").html(items);
+                        }
+                    });
+                    let NetExp = '@Model.NatureOfExpensesId';
+                    $.getJSON("/note/fetchNatureOfExpense", { idd: ExpInAt }, function (data) {
+                        if (data != null) {
+                            let items = '';
+                            items += "<option value=''>Select</option>";
+                            $.each(data, function (i, j) {
+                                if (NetExp == data[i].value) {
+                                    items += "<option selected value='" + data[i].value + "'>" + data[i].key + "</option>";
+                                }
+                                else {
+                                    items += "<option value='" + data[i].value + "'>" + data[i].key + "</option>";
+                                }
+                            });
+                            $("#NatureOfExpensesId").html(items);
+                        }
+                    });
+                }
+                $(".amount-box").show();
+                $("#approversearch").hide();
+                $('#recomendedapproverdiv').show();
+            }
+            else if ($("#CategoryId option:selected").text() == "Non Financial") {
+                $("#ExpensesIncurredAtid").val("");
+                $("#NatureOfExpensesId").val("");
+                $("#CapitalExpenditure").val("");
+                $("#OperationalExpenditure").val("");
+                $("#totalamount").val("0");
+                $(".amount-box").hide();
+                $("#approversearch").show();
+                $('#recomendedapproverdiv').hide();
+            }
+
+            $("#btnsave").click(function () {
+                ValidationForm();
+            });
+
+            function ValidationForm() {
+                if (!$("#dnsform").valid()) {
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else {
+                    $("#NoteState").val("Publish");
+                    ValidateFormCheck();
+                }
+            }
+
+            $("#btnsavedraft").click(function () {
+                if (!$("#dnsform").valid()) {
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else {
+                    $("#NoteState").val("Draft");
+                    $("#totalamount").val("0");
+                    ValidateFormCheck();
+                }
+            });
+
+        });
+        function getapprover(id) {
+            let numItems = $('.hiddenclass').length;
+            if (numItems < 7) {
+                let serial = $("#firstapproverserial").val();
+                if (serial == 0) {
+                    let userid = id;
+                    let namestring = $("#approverlistid_" + id).text();
+                    $("#firstapproverdetails").val(namestring);
+                    $("#firstapproveruserid").val(id);
+                    $("#firstapproverserial").val(1);
+                    $("#approverlist").css("display", "none");
+                    $("#selectedapproverwithadd").css("display", "flex");
+                    $("#approversearch").val("");
+                    $("#approversearch").css("display", "none");
+                }
+                else {
+                    $("#confirmapprover").css("display", "flex");
+                    let serialno = $("#firstapproverserial").val();
+                    let userid = $("#firstapproveruserid").val();
+                    let userdtl = $("#firstapproverdetails").val();
+                    let item = '';
+                    item += "<div class='col-9'>" +
+                        "<input type='hidden' id='confirmserial_" + serialno + "'value = '" + serialno + "' /> " +
+                        "<input type='hidden' class='hiddenclass' id='confirmuserid_" + serialno + "'value = '" + userid + "' /> " +
+                        "<input type='text' id='confirmvalue_" + serialno + "' class='form-control form-control-lg' style='margin-bottom: 10px;' readonly value = '" + userdtl + "' /> " +
+                        "</div>" +
+                        "<div class='col-3' style='padding-top:8px;'><span class='remove btn btn-outline-danger btn-sm btn-rounded' style='padding:8px 8px 0px;' onclick='removeapprover(" + serialno + ")' id = 'removeconfirm_" + serialno + "' > <i class='ti-close' > </i></span > </div>";
+                    $("#confirmapprover").append(item);
+
+                    let namestring = $("#approverlistid_" + id).text();
+                    $("#firstapproveruserid").val(id);
+                    $("#firstapproverdetails").val(namestring);
+                    let ii = (parseInt(serialno));
+                    serialno = ii + 1;
+                    $("#firstapproverserial").val(serialno);
+                    $("#approversearch").val("");
+                    $("#approversearch").css("display", "none");
+                    $("#approverlist").css("display", "none");
+                    let latestcount = $('.hiddenclass').length;
+                    if (latestcount > 6) {
+                        $("#approveradd").css("display", "none");
+                    }
+                    else {
+                        $("#approveradd").css("display", "inline-block");
+                    }
+                }
+            }
+            getuserlist();
+        }
+
+        function getapproverr(id) {
+            let str = $("#approverlistid_" + id).text();
+            $("#approversearch").val(str);
+            $("#tempapproveruid").val(id);
+            $("#approveradd").show();
+            $("#approverlist").hide();
+        }
+
+        $("#approveradd").click(function () {
+            $("#confirmapprover").css("display", "flex");
+            let serialno = 1;
+            if ($("#apvrserialno").val() != '') {
+                serialno = parseInt($("#apvrserialno").val()) + 1;
+            }
+            let userid = $("#tempapproveruid").val();
+            let userdtl = $("#approversearch").val();
+            let item = '';
+            item += "<div class='col-9'>" +
+                "<input type='hidden' id='confirmserial_" + serialno + "'value = '" + serialno + "' /> " +
+                "<input type='hidden' class='hiddenclass' id='confirmuserid_" + serialno + "'value = '" + userid + "' /> " +
+                "<input type='text' id='confirmvalue_" + serialno + "' class='form-control form-control-lg' style='margin-bottom: 10px;' readonly value = '" + userdtl + "' /> " +
+                "</div>" +
+                "<div class='col-3' style='padding-top:8px;'><span class='remove btn btn-outline-danger btn-sm btn-rounded' style='padding:8px 8px 0px;' onclick='removeapprover(" + serialno + ")' id = 'removeconfirm_" + serialno + "' > <i class='ti-close' > </i></span > </div>";
+            $("#confirmapprover").append(item);
+
+            $("#approversearch").val('');
+            $("#approveradd").hide();
+            $("#apvrserialno").val(serialno);
+            let latestcount = $('.hiddenclass').length;
+            if (latestcount > 6) {
+                $("#approversearch").css("display", "none");
+            }
+            else {
+                $("#approversearch").css("display", "inline-block");
+            }
+            getuserlist();
+
+        });
+
+        function removeapprover(id) {
+            if ($("#confirmvalue_" + id).val() != '') {
+
+            }
+            $("#confirmvalue_" + id).parent().remove();
+            $("#confirmserial_" + id).remove();
+            $("#confirmuserid_" + id).remove();
+            $("#confirmvalue_" + id).remove();
+            $("#removeconfirm_" + id).parent().remove();
+            $("#removeconfirm_" + id).remove();
+            if ($("#CategoryId").val() != "1") {
+                let latestcount = $('.hiddenclass').length;
+                if (latestcount > 6) {
+                    $("#approversearch").css("display", "none");
+                }
+                else {
+                    $("#approversearch").css("display", "inline-block");
+                }
+            }
+            getuserlist();
+
+        }
+
+        function getuserlist() {
+
+            let getApproverId = $('input.hiddenclass').map(function (i, obj) {
+                return $(this).val()
+            }).get().join(',');
+            $("#ApproverIdList").val(Encrypdata('@TempData["encdata"]', getApproverId));
+            //save approver as draft
+            ApproverAaveAsDraft();
+        }
+        function ApproverAaveAsDraft() {
+            if ($("#NoteId").val() != '') {
+                $.getJSON("/note/InsertApproverByNoteId", { noteid: $("#NoteId").val(), approverlist: $("#ApproverIdList").val().replace("+", "%2b").replace("=", "%3D").replace("/", "%2F") }, function (data) {
+
+                });
+            }
+            else {
+                errortoast();
+                $('.alertmsg').html('Please give note title first');
+            }
+        }
+
+        function ValidateFormCheck() {
+            debugger;
+            let numItems = $('.hiddenclass').length;    //Count of Approver
+            let userid = $("#UserId").val();
+            let notetitle = $("#NoteTitle").val();
+            let categoryid = $("#CategoryId").val();
+
+            let ApproverIdList = Decryptdata('@TempData["encdata"]', $("#ApproverIdList").val());
+
+            let summernote = $("#summernote").val();
+            let categoryname = $("#CategoryId option:selected").text();
+            if (summernote == '') {
+                $("#errormsg").text("Please enter the content in the note area.");
+                $("#error_popup").modal('show');
+                document.getElementById('load').style.visibility = "hidden";
+                return false;
+            }
+            // else {
+            //     //Regular expression to detect script tags
+            //     const scriptTagPattern = /<\/?(a|script)[^>]*>|&lt;\/?(a|script)&gt;/i;
+            //     //alert(summernote);
+            //     if (scriptTagPattern.test(summernote)) {
+            //         $("#errormsg").text("Invalid input in note body.");
+            //         $("#error_popup").modal('show');
+            //         document.getElementById('load').style.visibility = "hidden";
+            //         return false;
+            //     }
+            //     //$("#summernote").val(Encrypdata('@TempData["encdata"]', summernote));
+            //     //$("#summernote").val(btoa(summernote));
+
+            //     //var base64String = btoa(unescape(encodeURIComponent(summernote)))
+
+            //     //console.log(base64String);
+            //     //$("#summernote").val(base64String);
+
+            // }
+            if (categoryname == 'Financial') {
+                let expincurred = $("#ExpensesIncurredAtid option:selected").val();
+                let ntrofexp = $("#NatureOfExpensesId option:selected").val();
+                let capex = $("#CapitalExpenditure").val();
+                let opex = $("#OperationalExpenditure").val();
+                if (expincurred == '') {
+                    $("#errormsg").text("Please choose expenses incurred at");
+                    $("#error_popup").modal('show');
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else if (ntrofexp == '') {
+                    $("#errormsg").text("Please choose nature of expenses");
+                    $("#error_popup").modal('show');
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else if (capex == '') {
+                    $("#errormsg").text("Please enter capital expenditure.");
+                    $("#error_popup").modal('show');
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else if (opex == '') {
+                    $("#errormsg").text("Please enter operational expenditure");
+                    $("#error_popup").modal('show');
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+                else if (ApproverIdList == '') {
+                    $("#errormsg").text("Please choose approver");
+                    $("#error_popup").modal('show');
+                    document.getElementById('load').style.visibility = "hidden";
+                    return false;
+                }
+
+                $('form#dnsform').submit();
+            }
+            else if (ApproverIdList == '') {
+                $("#errormsg").text("Please choose approver");
+                $("#error_popup").modal('show');
+                document.getElementById('load').style.visibility = "hidden";
+                return false;
+            }
+            else if (categoryname == 'Non Financial') {
+
+                $('form#dnsform').submit();
+            }
+        }
+
+        $('#NatureOfExpensesId').on("change", function () {
+            FetchFinancialNoteApprover();
+        });
+
+        $("#CapitalExpenditure").on("keyup", function () {
+            FetchFinancialNoteApprover();
+        });
+
+        $("#OperationalExpenditure").on("keyup", function () {
+            FetchFinancialNoteApprover();
+        });
+
+
+        function FetchFinancialNoteApprover() {
+            let catname = $("#CategoryId option:selected").text();
+            let expid = $("#ExpensesIncurredAtid").val();
+            let noexp = $("#NatureOfExpensesId").val();
+            let totalamount = parseFloat($("#CapitalExpenditure").val().split(",").join("")) + parseFloat($("#OperationalExpenditure").val().split(",").join(""));
+            $.ajax({
+                type: "GET",
+                url: "/Note/FetchApproverList",
+                datatype: 'json',
+                data: { idd: expid, catname: catname, netofexp: noexp, totAmt: totalamount },
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data != null) {
+                        $("#confirmapprover").css("display", "flex");
+                        $("#ApproverIdList").val('');
+                        $("#confirmapprover").html('');
+                        $.each(data, function (i, j) {
+                            let idd = data[i].value;
+                            let idname = $('.hiddenclass').attr("id");
+                            let idvalue = $("#" + idname).val();
+                            let item = '';
+                            item = `<div class="col-10">` +
+                                `<input type="hidden" id="confirmserial_${i}" value = "${i}" /> ` +
+                                `<input type="hidden" class="hiddenclass" id="confirmuserid_${i}" value = "${data[i].value}" /> ` +
+                                `<input type="text" id="confirmvalue_${i}" class="form-control form-control-lg" style="margin-bottom: 10px;" readonly value = "${data[i].key}" /> ` +
+                                `</div>` +
+                                `<div class="col-1" style="padding-top:8px;"><span class="remove btn btn-outline-danger btn-sm btn-rounded" style='padding:8px 8px 0px;' onclick="removeapprover('${i}')" id = "removeconfirm_${i}" > <i class="ti-close" > </i></span > </div>`;
+                            $("#confirmapprover").append(item);
+                            getuserlist();
+                        });
+                        if (data.length > 0) {
+                            $(".arrovernotfound").html("");
+                        }
+                        else {
+                            $(".arrovernotfound").html("Not Available");
+                        }
+                    }
+                },
+                error: function (textStatus, errorThrown) {
+                    console.log("list error", textStatus);
+                }
+            });
+        }
+
+
+        $('INPUT[type="file"]').change(function () {
+            let ext = this.value.substr((this.value.lastIndexOf('.') + 1));
+            switch (ext.toLowerCase()) {
+                case 'jpg':
+                case 'jpeg':
+                case 'png':
+                case 'pdf':
+                case 'doc':
+                case 'docx':
+                case 'xlx':
+                case 'xlsx':
+                case 'zip':
+                    break;
+                default:
+
+                    $("#errormsg").text("Only .jpg, .jpeg, .png, .pdf, .doc, .docx, .xlx, .xlsx, .zip file types are allowed.");
+                    $("#error_popup").modal('show');
+                    this.value = '';
+                    let idname = $(this).attr('id');
+                    switch (idname) {
+                        case 'fileattach1':
+                            $("#crossattach1").hide();
+                            break;
+                        case 'fileattach2':
+                            $("#crossattach2").hide();
+                            break
+                        case 'fileattach3':
+                            $("#crossattach3").hide();
+                            break;
+                        case 'fileattach4':
+                            $("#crossattach4").hide();
+                            break;
+                        case 'fileattach5':
+                            $("#crossattach5").hide();
+                            break;
+                        default:
+                            break;
+                    }
+            }
+        });
+
+        ;
+        $(".tagrestrict").on("keyup blur", function () {
+            let reg = /<(.|\n)*?>/g;
+            if (reg.test($(this).val()) == true) {
+                let Input = $(this).val();
+                let no_spl_char = Input.replace(reg, "");
+                $(this).val(no_spl_char);
+            }
+        });
+
+
+        //Recomended Approver Start
+        function getrecomendedapproverr(id) {
+            let str = $("#recomendedapproverlistid_" + id).text();
+            $("#recomendedapproversearch").val(str);
+            $("#recomendedtempapproveruid").val(id);
+            $("#recomendedapproveradd").show();
+            $("#recomendedapproverlist").hide();
+        }
+
+        $("#recomendedapproveradd").click(function () {
+            $("#confirmrecomendedapprover").css("display", "flex");
+            let serialno = 1;
+            if ($("#recomendedapvrserialno").val() != '') {
+                serialno = parseInt($("#recomendedapvrserialno").val()) + 1;
+            }
+            let userid = $("#recomendedtempapproveruid").val();
+            let userdtl = $("#recomendedapproversearch").val();
+            let item = '';
+            item += "<div class='col-10'>" +
+                "<input type='hidden' id='recomendedconfirmserial_" + serialno + "'value = '" + serialno + "' /> " +
+                "<input type='hidden' class='rechiddenclass' id='recomendedconfirmuserid_" + serialno + "'value = '" + userid + "' /> " +
+                "<input type='text' id='recomendedconfirmvalue_" + serialno + "' class='form-control form-control-lg' style='margin-bottom: 1px;' readonly value = '" + userdtl + "' /> " +
+                "</div>" +
+                "<div class='col-1' style='padding-top:8px;'><span class='remove btn btn-outline-danger btn-sm btn-rounded' style='padding:8px 8px 0px;' onclick='removerecomendedapprover(" + serialno + ")' id = 'removerecomendedconfirm_" + serialno + "' > <i class='ti-close' > </i></span > </div>";
+            $("#confirmrecomendedapprover").append(item);
+
+            $("#recomendedapproversearch").val('');
+            $("#recomendedapproveradd").hide();
+            $("#recomendedapvrserialno").val(serialno);
+            let latestcount = $('.rechiddenclass').length;
+            if (latestcount > 4) {
+                $("#recomendedapproversearch").css("display", "none");
+            }
+            else {
+                $("#recomendedapproversearch").css("display", "inline-block");
+            }
+            getrecomendeduserlist();
+
+        });
+        function getrecomendeduserlist() {
+
+            let getRecApproverId = $('input.rechiddenclass').map(function (i, obj) {
+                return $(this).val()
+            }).get().join(',');
+            $("#RecomendedApproverIdList").val(Encrypdata('@TempData["encdata"]', getRecApproverId));//val(getRecApproverId);//
+            //save approver as draft
+            RecomendedApproverSaveAsDraft();
+        }
+        function RecomendedApproverSaveAsDraft() {
+            if ($("#NoteId").val() != '') {
+                $.getJSON("/note/InsertRecomendedApproverByNoteId", { noteid: $("#NoteId").val(), approverlist: $("#RecomendedApproverIdList").val().replace("+", "%2b").replace("=", "%3D").replace("/", "%2F") }, function (data) {
+
+                });
+            }
+        }
+        function removerecomendedapprover(id) {
+            if ($("#recomendedconfirmvalue_" + id).val() != '') {
+
+            }
+            $("#recomendedconfirmvalue_" + id).parent().remove();
+            $("#recomendedconfirmserial_" + id).remove();
+            $("#recomendedconfirmuserid_" + id).remove();
+            $("#recomendedconfirmvalue_" + id).remove();
+            $("#removerecomendedconfirm_" + id).parent().remove();
+            $("#removerecomendedconfirm_" + id).remove();
+            if ($("#CategoryId").val() == "1") {
+
+                let latestcount = $('.rechiddenclass').length;
+                if (latestcount > 4) {
+                    $("#recomendedapproversearch").css("display", "none");
+                }
+                else {
+                    $("#recomendedapproversearch").css("display", "inline-block");
+                }
+            }
+            getrecomendeduserlist();
+
+        }
+
+        function chooseattachment(id) {
+            if ($("#fileattach" + id).val() != '') {
+                $("#crossattach" + id).show();
+            }
+            else {
+                $("#crossattach" + id).hide();
+            }
+        }
+        function removeattachfile(id) {
+            $("#fileattach" + id).val('');
+            $("#crossattach" + id).hide();
+        }
+
+
+        $("#CapitalExpenditure").on("blur", function () {
+            let num = $('#CapitalExpenditure').val();
+
+            $("#CapitalExpenditure").val(formatNumberWithPattern(num));
+        });
+
+        $("#OperationalExpenditure").on("blur", function () {
+            let num = $('#OperationalExpenditure').val();
+
+            $("#OperationalExpenditure").val(formatNumberWithPattern(num));
+        });
+        function formatNumberWithPattern(num) {
+            var decimalPart = ((num.split(",").join("")) % 1).toFixed(2).substring(1);  //fraction number
+            num = num.split(",").join("");
+            num = num.toString().split('.')[0];
+            let newstr = '';
+            if (num.length > 10) {
+                newstr = num.slice(0, -10) + ',';
+                num = num.slice(num.length - 10, num.length);
+            }
+            if (num.length > 7) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -7) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -7) + ',';
+                }
+                num = num.slice(num.length - 7, num.length);
+            }
+            if (num.length > 5) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -5) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -5) + ',';
+                }
+                num = num.slice(num.length - 5, num.length);
+            }
+            if (num.length > 3) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -3) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -3) + ',';
+                }
+                num = num.slice(num.length - 3, num.length);
+            }
+            if (num.length <= 3 && num.length > 0) {
+                newstr = newstr + num;
+            }
+            if (num.length == 0) {
+                newstr = 0 + num;
+            }
+            newstr = newstr + decimalPart;
+
+            return newstr;
+        }
+
+        //Check File size Start
+        $('#fileattach1').on('change', function () {
+            if (this.files[0].size > 5242880) {
+                $("#crossattach1").hide();
+                $("#fileattach1").val('');
+                $("#fileattach1").css('border', '1px solid #dc3551');
+                $("#errormsg").text("File size must be less than 5 MB");
+                $("#error_popup").modal('show');
+            }
+            else {
+                $("#fileattach1").css('border', '1px solid #d9d9d9');
+            }
+        });
+        $('#fileattach2').on('change', function () {
+            if (this.files[0].size > 5242880) {
+                $("#crossattach2").hide();
+                $("#fileattach2").val('');
+                $("#fileattach2").css('border', '1px solid #dc3551');
+                $("#errormsg").text("File size must be less than 5 MB");
+                $("#error_popup").modal('show');
+            }
+            else {
+
+                $("#fileattach2").css('border', '1px solid #d9d9d9');
+            }
+        });
+        $('#fileattach3').on('change', function () {
+            if (this.files[0].size > 5242880) {
+                $("#crossattach3").hide();
+                $("#fileattach3").val('');
+                $("#fileattach3").css('border', '1px solid #dc3551');
+                $("#errormsg").text("File size must be less than 5 MB");
+                $("#error_popup").modal('show');
+            }
+            else {
+                $("#fileattach3").css('border', '1px solid #d9d9d9');
+            }
+        });
+        $('#fileattach4').on('change', function () {
+            if (this.files[0].size > 5242880) {
+                $("#crossattach4").hide();
+                $("#fileattach4").val('');
+                $("#fileattach4").css('border', '1px solid #dc3551');
+                $("#errormsg").text("File size must be less than 5 MB");
+                $("#error_popup").modal('show');
+            }
+            else {
+                $("#fileattach4").css('border', '1px solid #d9d9d9');
+            }
+        });
+        $('#fileattach5').on('change', function () {
+            if (this.files[0].size > 5242880) {
+                $("#crossattach5").hide();
+                $("#fileattach5").val('');
+                $("#fileattach5").css('border', '1px solid #dc3551');
+                $("#errormsg").text("File size must be less than 5 MB");
+                $("#error_popup").modal('show');
+            }
+            else {
+                $("#fileattach5").css('border', '1px solid #d9d9d9');
+            }
+        });
+        //File Size Check end
+
+    </script>
+}

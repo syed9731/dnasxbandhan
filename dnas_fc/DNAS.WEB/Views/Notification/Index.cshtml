@@ -1,0 +1,192 @@
+﻿@model DNAS.Domian.DTO.Draft.NotificationData
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="f-w-700 f-s-32">Notifications</h1>
+    </div>
+
+    <form id="searchForm" method="get" action="/Notification/Index">
+        <div class="d-flex flex-wrap gap-3 d-flex">
+            <div class=" search-section">
+                <div class=" search-section">
+                    @Html.TextBoxFor(model => model.FilterNotifications.StartDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerStartDate" })
+                </div>
+            </div>
+            <div class=" search-section">
+                <div class=" search-section">
+                    @Html.TextBoxFor(model => model.FilterNotifications.EndDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerEndDate" })
+                </div>
+            </div>
+            <div class="search-section">
+                @Html.DropDownListFor(model => model.FilterNotifications.Category, new SelectList(new[]
+                         {
+                new SelectListItem { Value = "", Text = "Select Category" },
+                new SelectListItem { Value = "Financial", Text = "Financial" },
+                new SelectListItem { Value = "Non Financial", Text = "Non Financial" }
+                }, "Value", "Text"), new { @class = "form-control form-control-lg search-field", id = "categoryField", name = "category" })
+            </div>
+            <div class="search-section">
+                @Html.DropDownListFor(model => model.FilterNotifications.Status, new SelectList(new[]{
+                new SelectListItem { Value = "", Text = "Select Status" },
+                new SelectListItem { Value = "Pending", Text = "In-Progress" },
+                new SelectListItem { Value = "SendBack", Text = "Sent Back" },
+                new SelectListItem { Value = "Approved", Text = "Completed" },
+                new SelectListItem { Value = "Withdraw", Text = "Withdraw"}
+                }, "Value", "Text"), new { @class = "form-control form-control-lg search-field", id = "statusField", name = "status" })
+            </div>
+
+            <div class="search-section">
+                <button type="submit" class="btn btn-primary search-btn">Search</button>
+            </div>
+            <div class="search-section">
+                <input type="button" id="DownloadNotifications" class="btn btn-primary search-btn" value="Download Excel" />
+            </div>
+        </div>
+    </form>
+
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive md-height">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @foreach (var item in Model.NotificationList)
+                                {
+                                    <tr>
+                                        <td>@item.Heading</td>
+                                        <td>@item.NoteTitle</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.NotificationTime</td>
+                                        @if (item.NoteStatus == "Approved")
+                                        {
+                                            <td><span class="badge badge-success">Completed</span></td>
+                                        }
+                                        else if (item.NoteStatus == "Pending")
+                                        {
+                                            <td><span class="badge badge-warning">In-Progress</span></td>
+                                        }
+                                        else if (item.NoteStatus == "SendBack")
+                                        {
+                                            <td><span class="badge badge-danger">Sent Back</span></td>
+                                        }
+                                        else if (item.NoteStatus == "Withdraw")
+                                        {
+                                            <td><span class="badge badge-danger">Withdraw</span></td>
+                                        }
+                                        <td>
+                                            <a class="btn btn-outline-primary btn-sm btn-rounded me-2 notificationRead" date-val="@item.NotificationId"><i class="ti-eye"></i></a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="modal fade" id="view_popup" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3 class="modal-title" id="staticBackdropLabel">.</h3>
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                                                aria-label="Close">
+                                            <i class="mdi mdi mdi-close"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="note-container" id="previewnotebody">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PostScripts {
+    <link href="~/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <script src="~/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $(function () {
+                $("#datePickerStartDate, #datePickerEndDate").datepicker({
+                    autoclose: true,
+                    format: "dd/mm/yyyy",
+                    todayHighlight: true,
+                });
+            });
+        });
+
+        $('#DownloadNotifications').click(function () {
+            var jsonData = JSON.stringify(@Html.Raw(Json.Serialize(Model)));
+            $.ajax({
+                url: '@Url.Action("DownloadNotification", "Notification")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonData,
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (response) {
+                    var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var url = window.URL.createObjectURL(blob);
+
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'NotificationsReport.xlsx';
+
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        $(".notificationRead").click(function (e) {
+            var clickedButton = $(this);
+            var id = $(this).attr('date-val');
+            $.ajax({
+                url: '@Url.Action("UpdateNotificationRead", "Notification")',
+                type: 'get',
+                contentType: 'application/json',
+                data: { NotifId: id },
+                success: function (response) {
+                    console.log(response);
+                    $("#staticBackdropLabel").text(response.data.heading)
+                    $("#previewnotebody").html(response.data.message);
+                    $("#view_popup").modal('show');
+
+                    $(clickedButton).parent().parent().remove();
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+    </script>
+}

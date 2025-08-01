@@ -1,0 +1,89 @@
+﻿@model DNAS.WEB.Models.RecomendedApproverComponentViewModel
+@{
+    int i = 0;
+    int count = 0;
+}
+
+
+@foreach (var item in Model.RecomendedApproverList)
+{
+    count++;
+    <div class="approver-box @(item.IsApproved=="True"?"approved":"") @(item.IsCurrentApprover.ToLower()=="true"?"current-approver":"")">
+        <div style="display:flex;justify-content: space-between;">
+            <h3 class="f-s-15 f-w-600 text-black pb-1">@item.FirstName @item.MiddleName @item.LastName </h3>
+
+            @if (item.Deligated_UserId > 0)
+            {
+                <span style="font-size: 12px;margin: 3px 5px;font-weight: 600;color: #004880de;">(Delegated)</span>
+            }
+            @if (item.IsApproved != "True" && Model.ViewType == "Withdraw" && string.IsNullOrEmpty(item.SkippBy))
+            {
+                <div class="dropdown">
+                    <span style="font-size: 22px;cursor: pointer;transform: rotate(90deg);" onclick="Recommenddropdownshow(@i)">...</span>
+                    <div id="RecommendmyDropdown_@i" class="dropdown-content1">
+                        <a href="javascript:void(0);" onclick="delegateapprover('@item.UserId')">Delegate</a>
+                        @if (item.IsCurrentApprover == "True")
+                        {
+                            <a href="javascript:void(0);" onclick="skippapprover()">Skip</a>
+                        }
+                    </div>
+                </div>
+                i++;
+            }
+        </div>
+        <div class="f-s-14 text-gray-300" style="padding-bottom:5px;">@(item.Department != "" ? item.Department + " |" : "") @(item.Grade != "" ? item.Grade + "|" : "") @item.DesignationName</div>
+        @if ((Model.NoteStatus == "Withdraw" || Model.NoteStatus == "SendBack") && item.IsApproved == "False")
+        {
+
+        }
+        else
+        {
+            <div class="f-s-14 text-gray-300 pt-1" style="padding-bottom:5px;">Status- <span class="@(item.IsApproved=="True"?"noteapproved":(string.IsNullOrEmpty(item.SkippBy)?"notepending":"noteskip"))">@(item.IsApproved == "True" ? "Approved" : (string.IsNullOrEmpty(item.SkippBy) ? "Pending" : "Skipped"))</span></div>
+        }
+        @if (item.ApprovedTime != DateTime.MinValue)
+        {
+            <div class="f-s-13 f-w-400  text-gray-300 pb-2 pt-2">
+                <i class="mdi mdi-clock-outline align-middle"></i> - @item.ApprovedTime.ToString("dd MMM yyyy") | @item.ApprovedTime.ToString("hh:mm tt")
+            </div>
+        }
+        
+    </div>
+    
+}
+
+
+
+
+@* @foreach (var item in Model.RecomendedApproverList)
+{
+    <div class="approver-box @(item.IsApproved=="True"?"approved":"")">
+        <div style="display:flex;">
+            <h3 class="f-s-15 f-w-600 text-black pb-1">@item.FirstName @item.MiddleName @item.LastName </h3>
+            @if (item.Deligated_UserId > 0)
+            {
+                <span style="font-size: 12px;margin: 3px 5px;font-weight: 600;color: #004880de;">(Delegated)</span>
+            }
+        </div>
+        <div class="f-s-14 text-gray-300" style="padding-bottom:5px;">@(item.Department != "" ? item.Department + " |" : "") @(item.Grade != "" ? item.Grade + "|" : "") @item.DesignationName</div>
+
+
+        @if ((Model.NoteStatus != "Withdraw" || Model.NoteStatus != "SendBack") && item.IsApproved != "False")
+        {
+            <div class="f-s-14 text-gray-300 pt-1" style="padding-bottom:5px;">
+                Status-
+                <span class="@(item.IsApproved == "True" ? "noteapproved" : "notepending")">
+                    @(item.IsApproved == "True" ? "Approved" : "Pending")
+                </span>
+            </div>
+
+        }
+
+        @if (item.ApprovedTime != DateTime.MinValue)
+        {
+            <div class="f-s-13 f-w-400  text-gray-300 pb-2 pt-2">
+                <i class="mdi mdi-clock-outline align-middle"></i> - @item.ApprovedTime.ToString("dd MMM yyyy") | @item.ApprovedTime.ToString("hh:mm tt")
+            </div>
+        }
+    </div>
+
+} *@

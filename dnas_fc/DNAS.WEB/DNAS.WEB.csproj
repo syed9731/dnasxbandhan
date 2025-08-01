@@ -1,0 +1,123 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	  <UserSecretsId>DNAS</UserSecretsId>
+  </PropertyGroup>
+
+	<ItemGroup>
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\font\summernote.woff2" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ar-AR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ar-AR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-az-AZ.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-az-AZ.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-bg-BG.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-bg-BG.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ca-ES.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ca-ES.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-cs-CZ.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-cs-CZ.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-da-DK.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-da-DK.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-de-DE.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-de-DE.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-el-GR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-el-GR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-es-ES.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-es-ES.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-es-EU.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-es-EU.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-fa-IR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-fa-IR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-fi-FI.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-fi-FI.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-fr-FR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-fr-FR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-gl-ES.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-gl-ES.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-he-IL.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-he-IL.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-hr-HR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-hr-HR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-hu-HU.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-hu-HU.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-id-ID.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-id-ID.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-it-IT.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-it-IT.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ja-JP.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ja-JP.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ko-KR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ko-KR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-lt-LT.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-lt-LT.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-lt-LV.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-lt-LV.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-mn-MN.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-mn-MN.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-nb-NO.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-nb-NO.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-nl-NL.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-nl-NL.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-pl-PL.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-pl-PL.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-pt-BR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-pt-BR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-pt-PT.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-pt-PT.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ro-RO.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ro-RO.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ru-RU.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ru-RU.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sk-SK.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sk-SK.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sl-SI.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sl-SI.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sr-RS-Latin.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sr-RS-Latin.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sr-RS.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sr-RS.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sv-SE.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-sv-SE.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ta-IN.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-ta-IN.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-th-TH.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-th-TH.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-tr-TR.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-tr-TR.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-uk-UA.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-uk-UA.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-uz-UZ.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-uz-UZ.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-vi-VN.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-vi-VN.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-zh-CN.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-zh-CN.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-zh-TW.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\lang\summernote-zh-TW.min.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\plugin\databasic\summernote-ext-databasic.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\plugin\hello\summernote-ext-hello.js" />
+	  <None Include="wwwroot\assets\summernote-0.8.18-dist\plugin\specialchars\summernote-ext-specialchars.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="ClosedXML" Version="0.102.2" />
+		<PackageReference Include="DNTCaptcha.Core" Version="5.2.8" />
+		<PackageReference Include="EasyCaptchaCore" Version="1.0.1" />
+		<PackageReference Include="jQuery.UI.Combined" Version="1.13.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2" />
+		<PackageReference Include="Microsoft.jQuery.Unobtrusive.Validation" Version="4.0.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+		<PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
+		<PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\DNAS.Persistence\DNAS.Persistence.csproj" />
+		<ProjectReference Include="..\DNAS.Shared\DNAS.Shared.csproj" />
+	</ItemGroup>
+
+</Project>

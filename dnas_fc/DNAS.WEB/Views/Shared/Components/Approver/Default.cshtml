@@ -1,0 +1,111 @@
+﻿@model DNAS.WEB.Models.ApproverComponentViewModel
+
+@{
+    int j = 0;
+    int count = 0;
+}
+
+
+@foreach (var item in Model.ApproverList)
+{
+    count++;
+
+    <div class="approver-box @(item.IsApproved=="True"?"approved":"") @(item.IsCurrentApprover.ToLower()=="true"?"current-approver":"")">
+        <div style="display:flex;justify-content: space-between;">
+            <h3 class="f-s-15 f-w-600 text-black pb-1">@item.FirstName @item.MiddleName @item.LastName </h3>
+
+            @if (item.SuffixPrefix == 1)
+            {
+                <span style="font-size: 12px;margin: 3px 5px;">(Added as Reviewer)</span>
+            }
+            @if (item.SuffixPrefix == 2)
+            {
+                <span style="font-size: 12px;margin: 3px 5px;">(Added as Approver)</span>
+            }
+
+            @if (item.Deligated_UserId > 0)
+            {
+                <span style="font-size: 12px;margin: 3px 5px;">(Delegated)</span>
+            }
+            @if (item.IsApproved != "True" && Model.ViewType == "Withdraw" && string.IsNullOrEmpty(item.SkippBy))
+            {
+                <div class="dropdown">
+                    <span style="font-size: 22px;cursor: pointer;transform: rotate(90deg);" onclick="dropdownshow(@j)">...</span>
+                    <div id="myDropdown_@j" class="dropdown-content">
+                        <a href="javascript:void(0);" onclick="delegateapprover('@item.UserId')">Delegate</a>
+                        @if (item.IsCurrentApprover == "True" && Model.ApproverList.Count > count)
+                        {
+                            <a href="javascript:void(0);" onclick="skippapprover()">Skip</a>
+                        }
+                    </div>
+                </div>
+                j++;
+            }
+        </div>
+        <div class="f-s-14 text-gray-300" style="padding-bottom:5px;">@(item.Department != "" ? item.Department + " |" : "") @(item.Grade != "" ? item.Grade + "|" : "") @item.DesignationName</div>
+        @if ((Model.NoteStatus == "Withdraw" || Model.NoteStatus == "SendBack") && item.IsApproved == "False")
+        {
+
+        }
+        else
+        {
+            <div class="f-s-14 text-gray-300 pt-1" style="padding-bottom:5px;">Status- <span class="@(item.IsApproved=="True"?"noteapproved":(string.IsNullOrEmpty(item.SkippBy)?"notepending":"noteskip"))">@(item.IsApproved == "True" ? "Approved" : (string.IsNullOrEmpty(item.SkippBy) ? "Pending" : "Skipped"))</span></div>
+        }
+        @if (item.ApprovedTime != DateTime.MinValue)
+        {
+            <div class="f-s-13 f-w-400  text-gray-300 pb-2 pt-2">
+                <i class="mdi mdi-clock-outline align-middle"></i> - @item.ApprovedTime.ToString("dd MMM yyyy") | @item.ApprovedTime.ToString("hh:mm tt")
+            </div>
+        }
+        @if (item.UserId == Model.UserId)
+        {
+            if (item.SuffixPrefix is null)
+            {
+                var suffixPrefixList = Model.ApproverList.Where(x => x.AddedBy.HasValue && x.AddedBy.Value == Convert.ToInt32(Model.UserId)).Select(m => m.SuffixPrefix);
+                if (suffixPrefixList.Count() != 3)
+                {
+                    if (Model.NoteStatus.Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                    {
+                        //for current user who have IsCurrentApprover= true and no Approver and Reviewer added
+                        if (suffixPrefixList.Count() == 0)
+                        {
+                            //if IsApproved is false and then IsCurrentApprover is true only show the reviewer and approver button
+                            if (item.IsApproved.ToLower() == "false" && item.IsCurrentApprover.ToLower() == "true")
+                            {
+                                <button class="f-s-14 text-gray-300 pt-1 reviewer" style="padding-bottom:5px;" data-bs-toggle="modal" data-bs-target="#ReviewerApproverModal" data-bs-backdrop="static" data-click-value="reviewer"><span style="font-weight:600;">+</span> Reviewer</button>
+                                <button class="f-s-14 text-gray-300 pt-1 approver" style="padding-bottom:5px;" data-bs-toggle="modal" data-bs-target="#ReviewerApproverModal" data-bs-backdrop="static" data-click-value="approver"><span style="font-weight:600;">+</span> Approver</button>
+                            }
+
+                        }
+                        //for current user who have IsCurrentApprover= true and Approver/Reviewer is added
+                        if (suffixPrefixList.Count() == 1)
+                        {
+                            if (suffixPrefixList.Any(x => x == 1))
+                            {
+                                <button class="f-s-14 text-gray-300 pt-1 approver" style="padding-bottom:5px;" data-bs-toggle="modal" data-bs-target="#ReviewerApproverModal" data-bs-backdrop="static" data-click-value="approver"><span style="font-weight:600;">+</span> Approver</button>
+                            }
+                            if (suffixPrefixList.Any(x => x == 2))
+                            {
+                                <button class="f-s-14 text-gray-300 pt-1 reviewer" style="padding-bottom:5px;" data-bs-toggle="modal" data-bs-target="#ReviewerApproverModal" data-bs-backdrop="static" data-click-value="reviewer"><span style="font-weight:600;">+</span> Reviewer</button>
+                            }
+                        }
+                    }
+                    //for current user who have IsCurrentApprover= true and Approver/Reviewer is added
+                    @* if (suffixPrefixList.Count() == 2)
+    {
+    if(suffixPrefixList.Any(x => x == 1))
+    {
+    <button class="f-s-14 text-gray-300 pt-1 approver" style="padding-bottom:5px;" data-bs-toggle="modal" data-bs-target="#ReviewerApproverModal" data-bs-backdrop="static" data-click-value="approver">Approver</button>
+    }
+    if (suffixPrefixList.Any(x => x == 2))
+    {
+    <button class="f-s-14 text-gray-300 pt-1 reviewer" style="padding-bottom:5px;" data-bs-toggle="modal" data-bs-target="#ReviewerApproverModal" data-bs-backdrop="static" data-click-value="reviewer">Reviewer</button>
+    }
+    } *@
+                }
+            }
+        }
+
+    </div>
+
+}

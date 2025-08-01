@@ -1,0 +1,60 @@
+﻿@model DNAS.Domian.DTO.Note.PendingNoteModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div class="card">
+        <div class="card-body">
+            <div class="b-block d-md-flex justify-content-between  pb-4">
+                <h4 class="f-s-22 f-w-600 text-black text-capitalize">@Model.noteModel.NoteTitle</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="">
+                        <h3 class="f-s-16 f-w-600  text-black pb-1">Category</h3>
+                        <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.CategoryName</div>
+                        <hr />
+                        @if (Model.noteModel.CategoryName == "Financial")
+                        {
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Expense Incurred At</h3>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.ExpenseIncurredAtName</div>
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Nature Of Expense</h3>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.NatureOfExpensesName</div>
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Expense Amount</h3>
+
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">
+                                OPEX : <span class="f-s-14 f-w-600 text-secondary">&#8377;@Model.noteModel.OperationalExpenditure</span><br />
+                                CAPEX : <span class="f-s-14 f-w-600 text-secondary">&#8377;@Model.noteModel.CapitalExpenditure</span><br />
+                                <hr style="width:70%;" />
+                                <b>Total :</b> <span class="f-s-14 f-w-600 text-secondary">&#8377;@Model.noteModel.TotalAmount</span>
+                            </div>
+
+                            <hr />
+                        }
+
+                        <h3 class="f-s-16 f-w-600  text-black pb-1">Note Creater</h3>
+                        <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.FirstName @Model.noteModel.MiddleName @Model.noteModel.LastName</div>
+                        <div class="f-s-14 f-w-400  text-gray-300 pb-2 pt-2">
+                            <i class="mdi  mdi-clock-outline align-middle"></i> - @Model.noteModel.DateOfCreation.ToString("dd MMM yyyy") | @Model.noteModel.DateOfCreation.ToString("hh:mm tt")
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="note-preview">
+                        <div class="note-container">
+                            @Html.Raw(Model.noteModel.NoteBody)
+                        </div>
+                    </div>
+                    <div class="pt-3 text-end mobile-btn">
+                        <a class="btn btn-warning btn-lg f-s-16 me-2" href="/Note/Create?s=@Model.noteModel.NoteId">
+                            Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

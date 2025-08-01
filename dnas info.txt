@@ -1,0 +1,8 @@
+cmd /c "netstat -an | findstr :5076"
+
+cmd /c "taskkill /f /im dotnet.exe"
+netstat -ano | findstr :5072
+
+appsetting.json 
+
+the connection string is in

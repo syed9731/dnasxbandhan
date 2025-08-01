@@ -1,0 +1,205 @@
+﻿@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="en">
+@{
+    var copyrightDate = DateTime.Now.Year;
+}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bandhan Bank</title>
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
+    <!-- CSS  -->
+    <link rel="stylesheet" href="/assets/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/assets/vendor/ti-icons/css/themify-icons.css" />
+    <link rel="stylesheet" href="/assets/vendor/mdi/css/materialdesignicons.min.css" />
+    <link rel="stylesheet" href="/assets/css/style.css" />
+    <style>
+        #load {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            z-index: 99;
+            background: url("/assets/images/loader.png") no-repeat center center rgba(0,0,0,0.25);
+            background-size: 75px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="load"></div>
+    <div class="container-scroller">
+        <!-- Top Navbar -->
+        <header class="navbar default-layout col-lg-12 col-12 p-0 d-flex align-items-top flex-row" aria-label="header section">
+            <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+                <div class="me-3">
+                    <button class="navbar-toggler navbar-toggler-desktop align-self-center" type="button">
+                        <span class="ti-menu"></span>
+                    </button>
+                </div>
+                <div>
+                    <a class="navbar-brand brand-logo" href="#">
+                        <img src="/assets/images/logo.png" alt="logo" />
+                    </a>
+                    <a class="navbar-brand brand-logo-mini" href="#">
+                        <img src="/assets/images/logo-round.png" alt="logo" />
+                    </a>
+                </div>
+            </div>
+
+            <div class="navbar-menu-wrapper d-flex align-items-top">
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <ul class="navbar-nav align-items-center">
+                        <li class="nav-item mobile-view-title d-lg-block f-w-500 ms-0">
+                            <h1 class="f-s-24 f-w-300">
+                                <span class="prefix-text">Welcome,</span> <span class="text-black f-w-600 text-secondary">@User.Identity?.Name</span>
+                            </h1>
+                            <h3 class="f-s-16 f-w-300"><span class="lable-box">Last Logged in :</span> @User.FindFirstValue("LoginTime")</h3>
+                        </li>
+                    </ul>
+                }
+                <ul class="navbar-nav ms-auto flex-row align-items-center">
+                    @await Component.InvokeAsync("Notification")
+                    <li class="nav-item dropdown user-dropdown me-3 me-lg-0">
+                        <a class="nav-link user-pic" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img class="img-xs rounded-circle" src="/assets/images/face8.jpg" alt="User Profile" />
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
+                            <div class="dropdown-header text-center">
+                                <p class="f-w-600 mb-0">@User.Identity?.Name</p>
+                                <p class="f-w-300 text-gray-500 mb-0">
+                                    @User.FindFirstValue(ClaimTypes.Email)
+                                </p>
+                            </div>
+                            <a class="dropdown-item" asp-action="logout" asp-controller="Login">
+                                <i class="dropdown-item-icon mdi mdi-power me-2"></i>Sign
+                                Out
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+                <button class="navbar-toggler navbar-toggler-mobile d-lg-none align-self-center" type="button"
+                        data-bs-toggle="offcanvas">
+                    <span class="mdi mdi-menu"></span>
+                </button>
+            </div>
+        </header>
+        <!-- /Top Navbar -->
+
+        <div class="container-fluid page-body-wrapper pt-0 bg-gray-200">
+            <aside class="sidebar sidebar-offcanvas" id="sidebar" aria-label="side menu">
+                @await Html.PartialAsync("_pertialmenu")
+            </aside>
+            <main class="main-panel">
+
+                @RenderBody()
+
+                <footer class="footer">
+                    <div class="d-sm-flex justify-content-center justify-content-sm-between">
+                        <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">
+                            Copyright © @copyrightDate. All rights
+                            reserved.
+                        </span>
+                    </div>
+                </footer>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal -->
+
+
+    <div class="toast-container position-absolute p-3 top-0 end-0">
+        <div class="toast fade" id="sucesstoast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Success</strong>
+                <small class="text-muted">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body sucessmsg">
+            </div>
+        </div>
+
+        <div class="toast fade" id="erroralert" role="alert" aria-live="assertive" aria-atomic="true" style="background: #f5a99b;">
+            <div class="toast-header">
+                <strong class="me-auto">Alert</strong>
+                <small class="text-muted">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body alertmsg">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="error_popup" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="text-end">
+                        <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                                aria-label="Close">
+                            <i class="mdi mdi mdi-close"></i>
+                        </button>
+                    </div>
+                    <div class="modal-top-icon f-s-60 text-center text-danger">
+                        <i class="mdi mdi-alert-circle-outline"></i>
+                    </div>
+                    <h4 class="text-center f-s-16 text-danger pt-1 pb-3" id="errormsg">
+                        .
+                    </h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- plugins:js -->
+    @RenderSection("PreScripts", required: false)
+    <script src="~/assets/js/jquery.js"></script>
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    <script src="~/assets/js/bootstrap.bundle.js"></script>
+    <script src="/assets/js/site.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('[data-toggle="tooltip"]').tooltip()
+        })
+
+        document.onreadystatechange = function () {
+            var state = document.readyState
+            if (state == 'complete') {
+                setTimeout(function () {
+                    document.getElementById('load').style.visibility = "hidden";
+                }, 1000);
+            }
+        }
+
+        $(document).ready(function () {
+            $("input[type=submit], button[type=submit], .loadervisible").click(function () {
+                document.getElementById('load').style.visibility = "visible";
+            });
+        });
+
+
+
+    </script>
+    @if (ViewBag.ISAjexNotNeed != "true")
+    {
+        <script>
+            $(document).ajaxStart(function () {
+                document.getElementById('load').style.visibility = "visible";
+            });
+
+            $(document).ajaxStop(function () {
+                document.getElementById('load').style.visibility = "hidden";
+            });
+        </script>
+    }
+
+
+    @RenderSection("PostScripts", required: false)
+
+</body>
+
+</html>

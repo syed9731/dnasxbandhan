@@ -1,0 +1,166 @@
+﻿@model DNAS.Domian.DTO.SearchNotes.SearchNoteData
+@{
+
+}
+
+<div class="content-wrapper">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="f-w-700 f-s-32">Search Notes</h1>
+    </div>
+    <form id="searchForm" method="get" action="/Note/Search">
+        <div class="d-flex flex-wrap gap-3 row" style="padding-left:0;padding-right:0;">
+            <div class=" search-section col-md-2" style="padding-left:0;padding-right:0;">
+                @Html.TextBoxFor(model => model.FilterSearchNotes.StartDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerStartDate" })
+            </div>
+            <div class="search-section col-md-2" style="padding-left:0;padding-right:0;">
+                @Html.TextBoxFor(model => model.FilterSearchNotes.EndDate, new { @class = "form-control form-control-lg search-field", @name = "EndDate", id = "datePickerEndDate" })
+            </div>
+            <div class="search-section col-md-2" style="padding-left:0;padding-right:0;">
+                @Html.DropDownListFor(model => model.FilterSearchNotes.Category, new SelectList(new[]
+                         {
+                new SelectListItem { Value = "", Text = "Select Category" },
+                new SelectListItem { Value = "Financial", Text = "Financial" },
+                new SelectListItem { Value = "Non Financial", Text = "Non Financial" }
+                }, "Value", "Text"), new { @class = "form-control form-control-lg search-field", id = "categoryField", name = "category" })
+            </div>
+            <div class="search-section col-md-4" style="padding-left:0;padding-right:0;">
+                <div style="width:100%;">
+                    @Html.TextBoxFor(model => model.FilterSearchNotes.Title, new { @class = "form-control search-field", autocomplete = "off", placeholder = "Title" })
+                    <ul style="list-style: none; border: 1px solid #d9d9d9; display:none;" id="titlelist1">
+                    </ul>
+                </div>
+
+            </div>
+            <div class="search-section col-md-1" style="padding-left:0;padding-right:0;">
+                <button type="submit" class="btn btn-primary search-btn">Search</button>
+            </div>
+        </div>
+    </form>
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Create Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.SearchNotes)
+                                {
+                                    <tr>
+                                        <td>@item.NoteTitle</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.DateOfCreation</td>
+                                        <td>
+                                            @if (item.QueryType == "Creator")
+                                            {
+                                                <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/note/Withdraw?p=@item.NoteId">
+                                                    <i class="ti-eye"></i>
+                                                </a>
+                                            }
+                                            else if (item.QueryType == "FyiUser")
+                                            {
+                                                <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/ViewFyi?p=@item.NoteId">
+                                                    <i class="ti-eye"></i>
+                                                </a>
+                                            }
+                                            else if (item.QueryType == "DelegatedUser")
+                                            {
+                                                <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/DelegateNote?p=@item.NoteId">
+                                                    <i class="ti-eye"></i>
+                                                </a>
+                                            }
+                                            else if (item.QueryType == "Approver")
+                                            {
+                                                <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/ApprovalRequest?p=@item.NoteId">
+                                                    <i class="ti-eye"></i>
+                                                </a>
+                                            }
+                                            else if (item.QueryType == "NoteSendBackToCreator")
+                                            {
+                                                <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/Views?p=@item.NoteId">
+                                                    <i class="ti-eye"></i>
+                                                </a>
+                                            }                                            
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @* <div class="pt-2">
+                    <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                    <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                    </li>
+                    <li class="page-item active">
+                    <a class="page-link" href="#">1</a>
+                    </li>
+                    <li class="page-item" aria-current="page">
+                    <span class="page-link">2</span>
+                    </li>
+                    <li class="page-item">
+                    <a class="page-link" href="#">3</a>
+                    </li>
+                    <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                    </li>
+                    </ul>
+                    </nav>
+                    </div> *@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PostScripts {
+    <link href="~/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <script src="~/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        $(function () {
+            $("#datePickerStartDate, #datePickerEndDate").datepicker({
+                autoclose: true,
+                format: "dd/mm/yyyy",
+                todayHighlight: true,
+            });
+        });
+        $(document).on("keyup", "#FilterSearchNotes_Title", function () {
+            $("#load").hide();
+            $.ajax({
+                url: "/Note/FetchAutopopulateNoteTitleList",
+                method: "GET",
+                data: { query: $("#FilterSearchNotes_Title").val(), dashboardType: "creator" },
+                success: function (arr) {
+                    if (arr.length > 0) {
+                        let item = '';
+
+                        $.each(arr, function (i, j) {
+                            item += "<li style='cursor:pointer' class='createapprover' onclick='getNoteTitle(" + i + ")'><p class='underpara'><span id='approverlistid_" + i + "' class='underspan'>" + arr[i].noteTitle + "</span></p></li>";
+                        });
+                        $("#titlelist1").html(item);
+                        $("#titlelist1").css("display", "block");
+                    }
+                    else {
+
+                        $("#titlelist1").html('');
+                        $("#titlelist1").css("display", "none");
+                    }
+                }
+            });
+        });
+        function getNoteTitle(id) {
+            let str = $("#approverlistid_" + id).text();
+            $("#FilterSearchNotes_Title").val(str);
+            $("#titlelist1").css("display", "none");
+        }
+    </script>
+}

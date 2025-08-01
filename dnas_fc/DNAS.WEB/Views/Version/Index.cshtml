@@ -1,0 +1,141 @@
+﻿@using System.Globalization
+@model DNAS.Domain.DTO.Note.NoteVersionModel
+
+<style>
+    .accordion-button {
+        padding: 0.5rem 1.25rem;
+    }
+
+        .accordion-button a {
+            margin-left: 25px;
+        }
+</style>
+<div class="content-wrapper">
+    @* <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="f-w-700 f-s-32">Version List</h1>
+    <h3 class="f-w-700 f-s-32">Note: @noteTitle</h3>
+    </div> *@
+    <div class="b-block d-md-flex justify-content-between  pb-4">
+        <h4 class="f-s-22 f-w-600 text-black pb-4 text-capitalize ">@Model.NoteApproved?.NoteTitle</h4>
+        <div class="f-s-16 f-w-600 text-success "> @Model.NoteApproved?.NoteUID</div>
+    </div>
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="accordion" id="accordionExample">
+                        @{
+                            if (Model is not null)
+                            {
+                                <!--Note Approved model data-->
+                                if (Model.NoteApproved is not null && Model.NoteApproved.NoteId is not null)
+                                {
+                                    <div class="accordion-item">
+                                        <div class="accordion-header" id="headingOne">
+                                            <div class="accordion-button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                Version @($"{Model.NoteApproved.MajorRevision}").0
+                                                <a href="@Url.Action("NoteVersionDetails", "Version", new { NoteId = Model.NoteApproved.NoteId, NoteVersionId = "", NoteVersionType = "current" })" class="btn btn-outline-primary btn-sm btn-rounded me-2"><i class="ti-eye"></i></a>
+                                            </div>
+                                        </div>
+
+
+                                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="table-responsive md-height">
+                                                    <table class="table table-striped" aria-describedby="mydesc">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Version</th>
+                                                                <th></th>
+                                                                <th>Date</th>
+                                                                <th>Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @{
+                                                                //int previousVersion = Model.NoteApproved.MajorRevision - 1;
+                                                                int previousVersion = Model.NoteApproved.MajorRevision > 0 ? (Model.NoteApproved.MajorRevision - 1) : 0;
+
+                                                                @foreach (var item in Model.NoteVersion.Where(m => m.MajorRevision == previousVersion).OrderByDescending(m => m.MinorRevision))
+                                                                {
+                                                                    <tr>
+                                                                        <td>@($"{item.MajorRevision}.{item.MinorRevision}")</td>
+                                                                        <td></td>
+                                                                        @{
+                                                                            var dateOfCreation = DateTime.ParseExact(item.DateOfCreation, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture);
+                                                                        }
+                                                                        <td>@dateOfCreation.ToString("dd MMM yyyy")</td>
+                                                                        <td>
+                                                                            <a href="@Url.Action("NoteVersionDetails", "Version", new { NoteId = item.NoteId, NoteVersionId = item.Note_VersionId, NoteVersionType = "child" })" class="btn btn-outline-primary btn-sm btn-rounded me-2"><i class="ti-eye"></i></a>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!--Note Approved Version model data-->
+                                if (Model.NoteApprovedVersion is not null && Model.NoteApprovedVersion.Count() > 0)
+                                {
+                                    foreach (var item in Model.NoteApprovedVersion.OrderByDescending(m => m.MajorRevision))
+                                    {
+                                        <div class="accordion-item">
+                                            <div class="accordion-header" id="heading(@item.MajorRevision)">
+                                                <div class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse(@item.MajorRevision)" aria-expanded="false" aria-controls="collapse(@item.MajorRevision)">
+                                                    Version @($"{item.MajorRevision}").0
+                                                    <a href="@Url.Action("NoteVersionDetails", "Version", new { NoteId = item.NoteId, NoteVersionId = item.NoteApproved_VersionId, NoteVersionType = "previous" })" class="btn btn-outline-primary btn-sm btn-rounded me-2"><i class="ti-eye"></i></a>
+                                                </div>
+                                            </div>
+
+
+                                            <div id="collapse(@item.MajorRevision)" class="accordion-collapse collapse" aria-labelledby="heading(@item.MajorRevision)" data-bs-parent="#accordionExample">
+                                                <div class="accordion-body">
+                                                    <div class="table-responsive md-height">
+                                                        <table class="table table-striped" aria-describedby="mydesc">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Version</th>
+                                                                    <th></th>
+                                                                    <th>Date</th>
+                                                                    <th>Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @{
+                                                                    int previousVersion = item.MajorRevision > 0 ? (item.MajorRevision - 1) : 0;
+
+                                                                    @foreach (var data in Model.NoteVersion.Where(m => m.MajorRevision == previousVersion).OrderByDescending(m => m.MinorRevision))
+                                                                    {
+                                                                        <tr>
+                                                                            <td>@($"{data.MajorRevision}.{data.MinorRevision}")</td>
+                                                                            <td></td>
+                                                                            <td>@(DateTime.ParseExact(data.DateOfCreation, "MM/dd/yyyy HH:mm:ss", CultureInfo.InvariantCulture).ToString("dd MMM yyyy"))</td>
+                                                                            <td>
+                                                                                <a href="@Url.Action("NoteVersionDetails", "Version", new { NoteId = data.NoteId, NoteVersionId = data.Note_VersionId, NoteVersionType = "child" })" class="btn btn-outline-primary btn-sm btn-rounded me-2"><i class="ti-eye"></i></a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </div>
+
+                                    }
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

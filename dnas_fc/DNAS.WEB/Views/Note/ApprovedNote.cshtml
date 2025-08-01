@@ -1,0 +1,563 @@
+﻿@model DNAS.Domain.DTO.Note.MyApprovedNoteModel
+@inject DNAS.Application.Common.Interface.ICheckExtension commFun
+@{
+    ViewData["Title"] = "ApprovedNote";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.CreatorDashboard = "active";
+
+}
+
+
+<style>
+    .note-container img {
+        max-width: 100% !important;
+    }
+
+    /* .note-container div {
+                            max-width: 100% !important;
+                        }
+
+                        .note-container p {
+                            max-width: 100% !important;
+                        } */
+
+
+    .dropbtn {
+        background-color: #3498DB;
+        color: white;
+        padding: 16px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+    }
+
+        .dropbtn:hover, .dropbtn:focus {
+            background-color: #2980B9;
+        }
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        overflow: auto;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content1 {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        overflow: auto;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+
+    .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown-content1 a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .dropdown a:hover {
+        background-color: #ddd;
+    }
+
+    .show {
+        display: block;
+    }
+</style>
+<div class="content-wrapper">
+    <div class="card">
+        <div class="card-body">
+            @if (Model.noteModel.NoteTitle != "" && Model.noteModel.NoteUID != "")
+            {
+                <div class="b-block d-md-flex justify-content-between  pb-4">
+                    <h4 class="f-s-22 f-w-600 text-black text-capitalize">@Model.noteModel.NoteTitle</h4>
+                    <div class="f-s-16 f-w-600 text-success">
+                        <div class="f-s-16 f-w-600 text-success mb-2"> @Model.noteModel.NoteUID</div>
+                        <span class="" style="display: block;">@Html.ActionLink("All Versions", "Index", "Version", new { p = Model.noteModel.NoteId }, new { @class = "btn btn-primary" })</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 col-lg-3 col-xl-3">
+                        <div class="">
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Category</h3>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.CategoryName</div>
+                            <hr />
+                            @if (Model.noteModel.CategoryName == "Financial")
+                            {
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Expense Incurred At</h3>
+                                <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.ExpenseIncurredAtName</div>
+                                <hr />
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Nature Of Expense</h3>
+                                if (Model.noteModel.NatureOfExpenseCode != "")
+                                {
+                                    <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.NatureOfExpenseCode) @Model.noteModel.NatureOfExpensesName</div>
+                                }
+                                else
+                                {
+                                    <div class="f-s-14 f-w-400  text-gray-300 pb-2"> @Model.noteModel.NatureOfExpensesName</div>
+                                }
+                                <hr />
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Expense Amount</h3>
+
+                                <div class="f-s-14 f-w-400  text-gray-300 pb-2">
+                                    OPEX : <span class="f-s-14 f-w-600 text-secondary" id="opex"></span><br />
+                                    CAPEX : <span class="f-s-14 f-w-600 text-secondary" id="capex"></span><br />
+                                    <hr style="width:70%;" />
+                                    <b>Total :</b> <span class="f-s-14 f-w-600 text-secondary" id="totalamount"></span>
+                                </div>
+
+                                <hr />
+                            }
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Note Creater</h3>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2">@Model.noteModel.FirstName @Model.noteModel.MiddleName @Model.noteModel.LastName</div>
+                            <div class="f-s-14 f-w-400  text-gray-300 pb-2 pt-2">
+                                <i class="mdi  mdi-clock-outline align-middle"></i> - @Convert.ToDateTime(Model.noteModel.DateOfCreation).ToString("dd MMM yyyy") | @Convert.ToDateTime(Model.noteModel.DateOfCreation).ToString("hh:mm tt")
+                            </div>
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Overall Note Status</h3>
+                            <div class="f-s-15 f-w-400 pb-2">
+                                @if (Model.noteModel.NoteStatus == "Pending")
+                                {
+                                    <span style="color: #004880b8; font-weight:600;">Pending</span>
+                                }
+                                else if (Model.noteModel.NoteStatus == "Approved")
+                                {
+                                    <span style="color: #198754; font-weight:600;">Approved</span>
+                                }
+                                else if (Model.noteModel.NoteStatus == "SendBack")
+                                {
+                                    <span style="color: #ca282f; font-weight:600;">Sent Back</span>
+                                }
+                                else if (Model.noteModel.NoteStatus == "Withdraw")
+                                {
+                                    <span style="color: #ffc107; font-weight:600;">Withdrawn</span>
+                                }
+                            </div>
+
+                            @if (Model.recomendedapproverModel.Any())
+                            {
+                                <hr />
+
+                                <h3 class="f-s-16 f-w-600  text-black pb-1">Recommenders/Reviewers</h3>
+                                @await Component.InvokeAsync("RecomendedApprover", new { viewModel = HtmlHelperExtension.ConvertToRecomendedApproverComponent(Model.recomendedapproverModel), NoteStatus = Model.noteModel.NoteStatus, viewType = "Withdraw" })
+                            }
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Approvers</h3>
+                            @await Component.InvokeAsync("Approver", new { viewModel = HtmlHelperExtension.ConvertToApproverComponent(Model.approverModel), NoteStatus = Model.noteModel.NoteStatus, viewType = "Withdraw" })
+                            <hr />
+                            <h3 class="f-s-16 f-w-600  text-black pb-1">Download Attachment</h3>
+                            <div class="d-flex flex-wrap gap-2">
+                                @{
+                                    int count = 0;
+                                }
+                                @foreach (var item in Model.attachmentsModel)
+                                {
+                                    @* <a class="btn btn-outline-primary btn-sm btn-attachment" href="/Download/file?AttatchedId=@item.AttachmentId" download="@item.DocumentName">
+                            <span class="mdi mdi-paperclip mr-2"></span>
+                            @item.DocumentName
+                            </a> *@
+                                    <a class="btn btn-outline-primary btn-sm attatchmentbox" id="attachfile_@count" href="/Download/file?AttatchedId=@item.AttachmentId" download="@item.DocumentName">
+                                        <span class="mdi mdi-paperclip mr-2"></span>
+                                        @item.DocumentName
+                                    </a>
+                                    count++;
+                                }
+                                @if (count < 5 && Model.noteModel.NoteStatus == "Pending" && Model.noteModel.NoteState == "Publish")
+                                {
+                                    <div style="padding:10px 0 0 0;">
+                                        <form action="/Note/UploadAttachment" method="post" enctype="multipart/form-data">
+                                            @Html.AntiForgeryToken()
+                                            @Html.HiddenFor(m => m.noteModel.NoteId)
+                                            <span style="font-weight:600;font-size:15px;">Upload File</span>
+                                            <div style="display:inline-flex;padding-top:5px;">
+                                                <input name="noteModel.AttachFiles" class="form-control form-control-lg" type="file" style="width:88%;min-height: 34px;max-height: 100%;padding: 0.25rem 1rem;" id="fileattach1" onchange="chooseattachment(1)">
+                                                <span class="remove btn btn-outline-danger btn-sm btn-rounded" style="padding: 7px 9px 0px 9px;margin-left: 4px; display:none;" id="crossattach1" onclick="removeattachfile(1)"> <i class='ti-close'> </i></span>
+                                            </div>
+                                            <button class="btn btn-primary" style="padding: 4px 12px;margin-top: 5px;display:none;" id="upload_button" type="submit">
+                                                Upload File
+                                            </button>
+                                        </form>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8 col-lg-9 col-xl-9 ">
+                        <div class="note-preview">
+                            <div class="note-container">
+                                @Html.Raw(Model.noteModel.NoteBody)
+                            </div>
+                        </div>
+
+                        <div class="post-wrapper">
+                            <div class="post">
+                                @foreach (var item in Model.commentModel)
+                                {
+                                    <div class="user-block">
+                                        <div style="display:inline-flex">
+                                            <span class="username">
+                                                @item.FirstName @item.MiddleName @item.LastName
+                                            </span>
+                                            <span style="font-weight:500;padding-left:10px;color: #888e93;font-size: 13px;">
+
+                                                @commFun.AddSpace(item.NoteStatus)
+                                            </span>
+                                        </div>
+                                        <span class="description">
+                                            <i class="mdi  mdi-clock-outline"></i> - @item.CommentTime.ToString("dd MMM yyyy") | @item.CommentTime.ToString("hh:mm tt")
+                                        </span>
+                                    </div>
+
+                                    <div class="text-gray-300">
+                                        @Html.Raw(item.Comment)
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        @if (Model.commentModel.Any() && Model.noteModel.NoteStatus != "SendBack" && Model.noteModel.NoteStatus != "Approved")
+                        {
+                            <form method="post" action="/Note/SaveQueryReply">
+                                <div class="pt-4">
+                                    <div class="input-group mb-3">
+                                        @Html.AntiForgeryToken()
+                                        @Html.HiddenFor(m => m.noteModel.NoteId)
+                                        @Html.HiddenFor(m => m.noteModel.NoteTitle)
+                                        @Html.TextAreaFor(m => m.querymodel.Comment, new { @class = "form-control form-control-lg", @placeholder = "Reply Comments...", @style = "min-height: 57px;" })
+                                        <button class="input-group-text btn btn-primary" type="submit">
+                                            <i class="mdi mdi-send"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        }
+
+
+                        @* <div class="pt-3 text-end">
+                            <button class="btn btn-info btn-lg f-s-16 me-2 fyiBtn" data-bs-toggle="modal" data-bs-target="#FyiModal" data-bs-backdrop="static">FYI</button>
+                        </div> *@
+
+                    </div>
+                </div>
+            }
+            else
+            {
+                <p style="text-align: center; font-size: 20px; font-weight: 600; padding: 50px 0px 50px 0px;color: #ca282f;">This link not valid for you.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="FyiModal" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <form action="/Note/ForYourInformation" method="post" id="FyiForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="queryTextarea" class="form-label">Employee Id / Name</label>
+                        @Html.HiddenFor(m => m.noteModel.SearchKey, new { @class = "insertclass", @id = "FyiComment" })
+                        <input type="text" class="form-control form-control-lg tagrestrict SearchKeycls" />
+                        <ul style="list-style: none; border: 1px solid #d9d9d9;padding-left:1rem; display:none;" class="SearchKeyList" @* id="SearchKeyList" *@></ul>
+                    </div>
+                    @Html.HiddenFor(m => m.noteModel.NoteId)
+                    @Html.HiddenFor(m => m.noteModel.NoteTitle)
+                    @Html.HiddenFor(m => m.noteModel.UserId)
+                    <div class="text-center pb-2 pt-4">
+                        <button type="button" class="btn btn-primary btn-lg f-s-16" id="FyiSubmit">
+                            Send
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section PostScripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var attachsuccessmsg = '@TempData["Attachsuccessmsg"]';
+            if (attachsuccessmsg != '') {
+                sucesstoast();
+                $('.sucessmsg').html('@TempData["Attachsuccessmsg"]');
+            }
+            var wrongApprovalEmail = '@TempData["WrongApprovalEmail"]';
+            if (wrongApprovalEmail != '') {
+                errortoast();
+                $('.alertmsg').html(wrongApprovalEmail);
+            }
+            var tempSuccessData = '@TempData["FyiMessageSuccess"]';
+            var tempFailedData = '@TempData["FyiMessageFailed"]';
+            if (tempSuccessData != '') {
+                sucesstoast();
+                $('.sucessmsg').html(tempSuccessData);
+            }
+            if (tempFailedData != '') {
+                errortoast();
+                $('.alertmsg').html(tempFailedData);
+            }
+            var SkipSuccess = '@TempData["SkipSuccess"]';
+            var SkipFail = '@TempData["SkipFail"]';
+            if (SkipSuccess != '') {
+                sucesstoast();
+                $('.sucessmsg').html(SkipSuccess);
+            }
+            if (SkipFail != '') {
+                errortoast();
+                $('.alertmsg').html(SkipFail);
+            }
+
+            var opex = '@Model.noteModel.OperationalExpenditure';
+            if (opex != '') {
+                $("#opex").text(formatNumberWithPattern(opex));
+            }
+
+            var capex = '@Model.noteModel.CapitalExpenditure';
+            if (capex != '') {
+                $("#capex").text(formatNumberWithPattern(capex));
+            }
+
+            var totalamount = '@Model.noteModel.TotalAmount';
+            if (totalamount != '') {
+                $("#totalamount").text(formatNumberWithPattern(totalamount));
+            }
+
+
+            $("#withdrawSubmit").click(function () {
+                if ($("#WidthdrawComment").val() == '') {
+                    $("#WidthdrawComment").css("border", "1px solid tomato");
+                    return false;
+                }
+                else {
+                    $("#WidthdrawComment").css("border", "1px solid #d9d9d9");
+                }
+                $('form#WidthdrawForm').submit();
+            });
+        });
+        function chooseattachment(id) {
+            if ($("#fileattach" + id).val() != '') {
+                $("#crossattach" + id).show();
+                $("#upload_button").show();
+            }
+            else {
+                $("#crossattach" + id).hide();
+                $("#upload_button").hide();
+            }
+        }
+        function removeattachfile(id) {
+            $("#fileattach" + id).val('');
+            $("#crossattach" + id).hide();
+            $("#upload_button").hide();
+        }
+
+
+
+        function dropdownshow(id) {
+            //alert();
+            if ($("#myDropdown_" + id).hasClass('show')) {
+                $(".dropdown-content").removeClass("show");
+            }
+            else {
+                $(".dropdown-content").removeClass("show");
+                document.getElementById("myDropdown_" + id).classList.toggle("show");
+            }
+            $(document).mouseup(function (e) {
+                var container = $("#myDropdown_" + id);
+                // if the target of the click isn't the container nor a descendant of the container
+                if (!container.is(e.target) && container.has(e.target).length === 0) {
+                    container.removeClass("show");
+                }
+            });
+        }
+        function Recommenddropdownshow(id) {
+            //alert();
+            if ($("#RecommendmyDropdown_" + id).hasClass('show')) {
+                $(".dropdown-content").removeClass("show");
+            }
+            else {
+                $(".dropdown-content").removeClass("show");
+                document.getElementById("RecommendmyDropdown_" + id).classList.toggle("show");
+            }
+            $(document).mouseup(function (e) {
+                var container = $("#RecommendmyDropdown_" + id);
+                // if the target of the click isn't the container nor a descendant of the container
+                if (!container.is(e.target) && container.has(e.target).length === 0) {
+                    container.removeClass("show");
+                }
+            });
+        }
+
+        function delegateapprover(id) {
+            $('#DelegateModal').modal('show');
+            $('#creatorDelegate_oldapproverid').val(id);
+        }
+        function skippapprover() {
+            $('#skipp_popup').modal('show');
+        }
+
+        $("#DelegateSubmit").click(function () {
+            if ($("#DelegateByCreatorSearchKey").val() == '') {
+                $("#DelegateByCreatorSearchKey").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#DelegateByCreatorSearchKey").css("border", "1px solid #d9d9d9");
+            }
+            if ($("#DelegateByCreatorComment").val() == '') {
+                $("#DelegateByCreatorComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#DelegateByCreatorComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#DelegateByCreatorform').submit();
+        });
+        $("#FyiSubmit").click(function () {
+            if ($("#FyiComment").val() == '') {
+                $("#FyiComment").css("border", "1px solid tomato");
+                return false;
+            }
+            else {
+                $("#FyiComment").css("border", "1px solid #d9d9d9");
+            }
+            $('form#FyiForm').submit();
+        });
+        function formatNumberWithPattern(num) {
+
+            var decimalPart = (num % 1).toFixed(2).substring(1);  //fraction number
+            //num = parseInt(num.split(",").join(""));
+            num = num.toString().split('.')[0];
+
+            let newstr = '';
+            if (num.length > 10) {
+                newstr = num.slice(0, -10) + ',';
+                num = num.slice(num.length - 10, num.length);
+            }
+            if (num.length > 7) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -7) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -7) + ',';
+                }
+                num = num.slice(num.length - 7, num.length);
+            }
+            if (num.length > 5) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -5) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -5) + ',';
+                }
+                num = num.slice(num.length - 5, num.length);
+            }
+            if (num.length > 3) {
+                if (newstr == '') {
+                    newstr = num.slice(0, -3) + ',';
+                }
+                else {
+                    newstr = newstr + num.slice(0, -3) + ',';
+                }
+                num = num.slice(num.length - 3, num.length);
+            }
+            if (num.length <= 3) {
+                newstr = newstr + num;
+            }
+            newstr = '₹ ' + newstr + decimalPart;
+            return newstr;
+        }
+
+        $("#confirmAmend").click(function () {
+            let url = '/Note/AmendNote?q=' + '@Model.noteModel.NoteId';
+            window.location.href = url;
+        });
+
+
+
+        $("#attachfile_0").hover(function () {
+            const link = document.querySelector('a#attachfile_0');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_1").hover(function () {
+            const link = document.querySelector('a#attachfile_1');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_2").hover(function () {
+            const link = document.querySelector('a#attachfile_2');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_3").hover(function () {
+            const link = document.querySelector('a#attachfile_3');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+        $("#attachfile_4").hover(function () {
+            const link = document.querySelector('a#attachfile_4');
+            const downloadValue = link.getAttribute('download');
+            $(this).css('cursor', 'pointer').attr('title', downloadValue);
+        }, function () {
+            $(this).css('cursor', 'auto');
+        });
+
+        $(document).on('keyup', '.SearchKeycls', function () {
+            //$(".addsearchkeybtn").hide();
+            $.getJSON("/note/fetchReviewerOrApproverList", { searchKey: $(".SearchKeycls").val(), noteId: $('#noteModel_NoteId').val() }, function (data) {
+                if (data != null) {
+                    let item = '';
+                    $.each(data, function (i, j) {
+                        item += `<li style="cursor:pointer;padding-top:15px" class="selectappr" data-username="${data[i].key}" data-userval="${data[i].value}"><p class='underpara'><span id="SearchListId_${data[i].value}" class="underspan">${data[i].key}</span></p></li>`;
+                    });
+                    $(".SearchKeyList").html(item);
+                }
+            });
+            $(".SearchKeyList").css("display", "block");
+        });
+
+        $(document).on("click", ".selectappr", function () {
+            //console.log($(this).attr("data-userval"));
+            let id = $(this).attr("data-userval");
+            let str = $(this).attr("data-username");
+            $(".SearchKeycls").val(str);
+            $(".insertclass").val(id);
+            $(".SearchKeyList").hide();
+        });
+
+    </script>
+
+}

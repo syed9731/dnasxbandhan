@@ -1,0 +1,72 @@
+﻿<ul class="nav">
+    <li class="nav-item @ViewBag.Dashboard">
+        <a class="nav-link" href="/Dashboard/Index">
+            <i class="mdi mdi-view-dashboard menu-icon"></i>
+            <span class="menu-title">Dashboard</span>
+        </a>
+    </li>
+    <li class="nav-item @ViewBag.CreateNewNotes">
+        <a class="nav-link" href="/Note/Create">
+            <i class="mdi mdi-pencil-box menu-icon"></i>
+            <span class="menu-title">Create New Note</span>
+        </a>
+    </li>
+
+    <li class="nav-item @ViewBag.CreatorDashboard">
+        <a class="nav-link" href="/Note/CreatorDashboard">
+            <i class="mdi mdi-calendar-multiple-check menu-icon"></i>
+            <span class="menu-title">Creator Dashboard</span>
+        </a>
+    </li>
+
+    <li class="nav-item @ViewBag.ApproverDashboard">
+        <a class="nav-link" href="/Note/ApproverDashboard">
+            <i class="mdi mdi-calendar-multiple-check menu-icon"></i>
+            <span class="menu-title">Approver Dashboard</span>
+        </a>
+    </li>
+    @* <li class="nav-item @ViewBag.PendingApprovals">
+        <a class="nav-link" href="/Note/Pending">
+            <i class="mdi mdi-calendar-multiple-check menu-icon"></i>
+            <span class="menu-title">Approve Notes</span>
+        </a>
+    </li> *@
+    <li class="nav-item @ViewBag.DraftNotes">
+        <a class="nav-link" href="/Note/Draft">
+            <i class="mdi mdi-package-variant-closed menu-icon"></i>
+            <span class="menu-title">Draft Notes</span>
+        </a>
+    </li>
+    <li class="nav-item @ViewBag.TemplatesLibrary">
+        <a class="nav-link" href="/Template/Library">
+            <i class="mdi mdi-note-text menu-icon"></i>
+            <span class="menu-title">Template Library</span>
+        </a>
+    </li>    
+    @* <li class="nav-item @ViewBag.ApprovedNotes">
+        <a class="nav-link" href="/Note/Approved">
+            <i class="mdi mdi-checkbox-marked-circle-outline menu-icon"></i>
+            <span class="menu-title">Approved Notes</span>
+        </a>
+    </li>   *@
+    <li class="nav-item @ViewBag.FYI">
+        <a class="nav-link" href="/Note/FYIList">
+            <i class="mdi mdi-information menu-icon"></i>
+            <span class="menu-title">FYI</span>
+        </a>
+    </li>
+    <li class="nav-item @ViewBag.SendBack">
+        <a class="nav-link" href="/Note/SendBack">
+            <i class="mdi mdi-format-list-checks menu-icon"></i>
+            <span class="menu-title">Sent Back Notes</span>
+        </a>
+    </li>
+    <li class="nav-item @ViewBag.Withdraw">
+        <a class="nav-link" href="/Note/WithdrawList">
+            <i class="mdi mdi-animation-outline menu-icon"></i>
+            <span class="menu-title">Withdrawn Notes</span>
+        </a>
+    </li>
+
+    
+</ul>

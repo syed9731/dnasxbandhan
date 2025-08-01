@@ -1,0 +1,25 @@
+﻿@model DNAS.Domian.DTO.Template.TemplateModel
+
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="f-s-22 f-w-600 text-black pb-4 text-capitalize ">@Model.TemplateName</h4>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="note-preview">
+                            <div class="note-container">
+                                @Html.Raw(Model.TemplateBody)
+                            </div>
+                        </div>
+
+                    <div class="pt-3 text-end mobile-btn">
+                            <a class="btn btn-warning btn-lg f-s-16 me-2" href="/Note/Create?t=@Model.TemplateId">
+                                Create as a note
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

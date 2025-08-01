@@ -1,0 +1,205 @@
+﻿@using DNAS.Domian.DTO.Template
+@model TemplateModelData
+@{
+    ViewBag.TemplatesLibrary = "active";
+    int i = 1;
+}
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3 ">
+        <h1 class="f-w-700 f-s-32">Templates Library</h1>
+        <a href="/Note/Create" class="btn btn-primary btn-lg btn-lg f-s-16">Create New Note</a>
+    </div>
+    <form id="searchForm" method="get" action="/Template/Library">
+        <div class="d-flex flex-wrap gap-2 d-flex">
+            <div class=" search-section">
+                @Html.TextBoxFor(model => model.FilterTemplates.StartDate, new { @class = "form-control form-control-lg search-field", @name = "StartDate", id = "datePickerStartDate" })
+            </div>
+            <div class=" search-section">
+                @Html.TextBoxFor(model => model.FilterTemplates.EndDate, new { @class = "form-control form-control-lg search-field", @name = "EndDate", id = "datePickerEndDate" })
+            </div>
+            <div class="search-section">
+                @Html.DropDownListFor(model => model.FilterTemplates.Category, new SelectList(new[]
+                         {
+                new SelectListItem { Value = "", Text = "Select Category" },
+                new SelectListItem { Value = "Financial", Text = "Financial" },
+                new SelectListItem { Value = "Non Financial", Text = "Non Financial" }
+                }, "Value", "Text"), new { @class = "form-control form-control-lg search-field", id = "categoryField", name = "category" })
+            </div>
+
+            <div class="search-section gap-3 d-flex">
+                <button type="submit" class="btn btn-primary search-btn">Search</button>
+            
+                <input type="button" id="DownloadTemplateLibrary" class="btn btn-primary search-btn" value="Download Excel" />
+            </div>
+        </div>
+    </form>
+
+    <div class="row pt-4">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive md-height">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Template Name</th>
+                                    <th>Category</th>
+                                    <th>Create Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (TemplateModel item in Model.TemplateList)
+                                {
+                                    <tr id="tblrw_@i">
+                                        <td>@item.TemplateName</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.DateOfCreation.ToString("dd MMM yyyy")</td>
+                                        <td>
+                                            <button class="btn btn-outline-primary btn-sm btn-rounded me-2" onclick="viewtemplate('@item.TemplateId')" type="button">
+                                                <i class="ti-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning btn-sm btn-rounded me-2" onclick="EditTemplate('@item.TemplateId')" type="button">
+                                                <i class="ti-pencil"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm btn-rounded" data-bs-toggle="modal"
+                                                    data-bs-target="#delet_temppopup" onclick="deltemp('@item.TemplateId',@i)">
+                                                <i class="ti-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    i++;
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="delet_temppopup" tabindex="-1" aria-labelledby="delet_popupLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-end">
+                    <button type="button" class="btn btn-outline-warning btn-sm btn-rounded" data-bs-dismiss="modal"
+                            aria-label="Close">
+                        <i class="mdi mdi mdi-close"></i>
+                    </button>
+                </div>
+                <input type="hidden" id="ontable" />
+                <input type="hidden" id="ontableId" />
+                <input type="hidden" id="cnt" />
+                <div class="modal-top-icon f-s-60 text-center text-danger">
+                    <i class="mdi mdi-alert-circle-outline"></i>
+                </div>
+                <h2 class="text-center f-s-24 text-primary pt-1 pb-3">
+                    Are you sure?
+                </h2>
+                <p class="text-center f-s-15 pb-2">
+                    Do you really want to delete this record? This process cannot be
+                    undone.
+                </p>
+                <div class="text-center pb-2">
+                    <button type="button" class="btn btn-secondary btn-lg f-s-16 closeme" data-bs-dismiss="modal">
+                        No
+                    </button>
+                    <button type="button" class="btn btn-primary btn-lg f-s-16" id="confirmdel">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PostScripts {
+    <link href="~/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet" />
+    <script src="~/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        $(function () {
+
+            if ('@TempData["msg"]' != '') {
+               sucesstoast();
+                $('.sucessmsg').html('@TempData["msg"]');
+            }
+            if ('@TempData["errormsg"]' != '') {
+                errortoast();
+                $('.alertmsg').html('@TempData["errormsg"]');
+            }
+
+            $("#datePickerStartDate, #datePickerEndDate").datepicker({
+                autoclose: true,
+                format: "dd/mm/yyyy",
+                todayHighlight: true,
+            });
+        });
+
+        $('#DownloadTemplateLibrary').click(function () {
+            var jsonData = JSON.stringify(@Html.Raw(Json.Serialize(Model)));
+
+            $.ajax({
+                url: '@Url.Action("DownloadLibrary", "Template")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonData,
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (response) {
+                    var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                    var url = window.URL.createObjectURL(blob);
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'TemplateLibraryReport.xlsx';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                },
+                error: function (xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        });
+
+        function viewtemplate(id) {
+            if (id != '') {
+                let url = "/Template/Views?t=" + id;
+                window.location.href = url;
+            }
+        }
+        function EditTemplate(id) {
+            if (id != '') {
+                let url = "/Template/Edit?t=" + id;
+                window.location.href = url;
+            }
+        }
+        function deltemp(id,id1) {
+            if (id != '') {
+                $("#ontableId").val(id);
+                $("#ontable").val("Template");
+                $("#cnt").val(id1);
+            }
+            document.getElementById('load').style.visibility = "hidden";
+        }
+        $("#confirmdel").on("click", function () {            
+            if ($("#ontableId").val() != '' && $("#ontable").val() != '') {
+                let ontable = $("#ontable").val();
+                let id = $("#ontableId").val();
+                let id1 = $("#cnt").val();
+                if (ontable == 'Template') {
+                    $.getJSON("/Template/DeleteTemplate", { idd: id }, function (data) {
+                        if (data == "success") {
+                            //$("#delet_temppopup").modal('toggle');
+                            $("#tblrw_" + id1).remove();
+                            sucesstoast();
+                            $('.sucessmsg').html('Delete successfully done');
+                            $('.closeme').trigger('click');
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+}

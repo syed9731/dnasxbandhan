@@ -1,0 +1,9 @@
+﻿@using DNAS.Domian.DTO.Draft;
+@model HederNotificationsList
+
+<li class="nav-item dropdown me-3">
+    <a class="nav-link count-indicator position-relative" href="/Notification">
+        <i class="ti-bell f-s-24 text-gray-300"></i>
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">@Model.NotificationCount</span>
+    </a>
+</li>

@@ -1,0 +1,180 @@
+﻿@using DNAS.Domian.DTO.DashBoard;
+@model ApprovalData
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Dashboard = "active";
+}
+
+<div class="content-wrapper">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="f-w-700 f-s-40">Dashboard</h1>
+        <div class="button-wrap">
+            <a href="/Note/Search" class="btn btn-success btn-lg btn-lg f-s-16 me-2 search">Search Notes</a>
+            <a href="/Note/Create" class="btn btn-primary btn-lg btn-lg f-s-16 note">Create New Note</a>
+        </div>
+
+    </div>
+    <div class="row pb-4 g-4">
+        <div class=" col-xl-3 col-lg-6 col-6">
+            <a class="small-box p-3 bg-white d-block text-decoration-none h-100 icon-holder" href="/Template/Library">
+                <span class="d-flex justify-content-between align-items-center">
+                    <span class="d-block">
+                        <span class="f-s-32 f-w-700 text-secondary d-block">@Model.Totalcount.TempMasterRowCount</span>
+                        <span class="f-s-18 f-w-500 text-black d-block pt-3 ">Templates Libary</span>
+                    </span>
+                    <span class="icon-wrapper bg-secondary text-white">
+                        <span class="mdi mdi-layers-triple-outline f-s-50"></span>
+                    </span>
+                </span>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-6">
+            <a class="small-box p-3 bg-white d-block text-decoration-none h-100 icon-holder" href="/Note/Pending">
+                <span class="d-flex justify-content-between align-items-center">
+                    <span class="d-block">
+                        <span class="f-s-32 f-w-700 text-info d-block">@Model.Totalcount.NoteRowCount</span>
+                        <span class="f-s-18 f-w-500 text-black d-block pt-3 ">My Submissions (Pending)</span>
+                    </span>
+                    <span class="icon-wrapper bg-info text-white">
+                        <span class="mdi mdi-check-circle-outline f-s-50"></span>
+                    </span>
+                </span>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-6">
+            <a class="small-box p-3 bg-white d-block text-decoration-none h-100 icon-holder" href="/Note/Approved">
+                <span class="d-flex justify-content-between align-items-center">
+                    <span class="d-block">
+                        <span class="f-s-32 f-w-700 text-success d-block">@Model.Totalcount.ApproveRowCount</span>
+                        <span class="f-s-18 f-w-500 text-black d-block pt-3 ">My Submissions (Approved)</span>
+                    </span>
+                    <span class="icon-wrapper bg-success text-white">
+                        <span class="mdi mdi-check-all f-s-50"></span>
+                    </span>
+                </span>
+            </a>
+        </div>
+
+        <div class="col-xl-3 col-lg-6 col-6">
+            <a class="small-box p-3 bg-white d-block text-decoration-none h-100 icon-holder" href="/Notification/index">
+                <span class="d-flex justify-content-between align-items-center">
+                    <span class="d-block">
+                        <span class="f-s-32 f-w-700 text-warning d-block">@Model.Totalcount.NotificationRowCount</span>
+                        <span class="f-s-18 f-w-500 text-black d-block pt-3">Notifications</span>
+                    </span>
+                    <span class="icon-wrapper bg-warning text-white">
+                        <span class="mdi mdi-bell-alert-outline f-s-50"></span>
+                    </span>
+                </span>
+            </a>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-lg-6 pb-4 pb-lg-0">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="f-s-22 f-w-600 text-primary">Notes Awaiting My Approval</h4>
+                    <div class="table-responsive equal-panel">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Create Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Approval item in Model.ApprovalList)
+                                {
+                                    <tr>
+                                        <td><a style="text-decoration: none; color: var(--bs-table-striped-color);" href="/Note/ApprovalRequest?p=@item.NoteId">@item.NoteTitle</a></td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.DateOfCreation</td>
+                                        <td>
+                                            <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/ApprovalRequest?p=@item.NoteId">
+                                                <i class="ti-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.ApprovalList.Any())
+                                {
+                                    <tr><td colspan="4" class="text-center">Data not available</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="f-s-22 f-w-600 text-primary">
+                        Draft
+                    </h4>
+                    <div class="table-responsive equal-panel">
+                        <table class="table table-striped" aria-describedby="mydesc">
+                            <thead>
+                                <tr>
+                                    <th>Note Title</th>
+                                    <th>Category</th>
+                                    <th>Create Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.DraftList)
+                                {
+                                    <tr>
+                                        <td>@item.NoteTitle</td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.DateOfCreation</td>
+                                        <td>
+                                            <a class="btn btn-outline-primary btn-sm btn-rounded me-2" href="/Note/ViewDraft?p=@item.NoteId">
+                                                <i class="ti-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                                @if (!Model.DraftList.Any())
+                                {
+                                    <tr><td colspan="4" class="text-center">Data not available</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PostScripts {
+    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            if ('@TempData["msg"]' != '') {
+                sucesstoast();
+                $('.sucessmsg').html('@TempData["msg"]');
+            }
+
+            var tempSuccessData = '@TempData["WithdrawMsgSuccess"]';
+            var tempFailedData = '@TempData["WithdrawMsgFail"]';
+            if (tempSuccessData != '') {
+                sucesstoast();
+                $('.sucessmsg').html(tempSuccessData);
+            }
+            if (tempFailedData != '') {
+                errortoast();
+                $('.alertmsg').html(tempFailedData);
+            }
+        });
+    </script>
+    
+}
